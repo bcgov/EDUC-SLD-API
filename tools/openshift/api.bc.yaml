@@ -63,7 +63,7 @@ parameters:
     description: Application repository name
     required: true
   - name: JOB_NAME
-    description: Job identifier (i.e. 'pr-5' OR 'master')
+    description: Job identifier (i.e. 'pr-5' OR 'main')
     required: true
   - name: SOURCE_REPO_REF
     description: Git Pull Request Reference (i.e. 'pull/CHANGE_ID/head')
