@@ -35,7 +35,6 @@ public class SldStudentService {
    * @return the sld by pen
    */
   public List<SldStudentEntity> getSldByPen(String pen) {
-    System.out.println(getSldRepository().findAllByPen(pen));
     return getSldRepository().findAllByPen(pen);
   }
 }
