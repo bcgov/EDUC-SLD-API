@@ -15,7 +15,7 @@ objects:
     spec:
       source:
         git:
-          ref: master
+          ref: main
           uri: 'https://github.com/bcgov/EDUC-SLD-API'
         type: Git
       strategy:
