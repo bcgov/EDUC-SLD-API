@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * The interface SLD Student endpoint.
  */
-@RequestMapping("/student/v1")
+@RequestMapping("/api/v1/student")
 @OpenAPIDefinition(info = @Info(title = "API for SLD Student data.", description = "This Read API is for Reading the SLD data of a student in BC from open vms system.", version = "1"), security = {@SecurityRequirement(name = "OAUTH2", scopes = {"READ_SLD_STUDENT"})})
 public interface SldStudentEndpoint {
 
@@ -28,7 +28,7 @@ public interface SldStudentEndpoint {
    */
   @GetMapping("/")
   @PreAuthorize("#oauth2.hasScope('READ_SLD_STUDENT')")
-  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
   List<SldStudent> getSldStudentByPen(@RequestParam() String pen);
 
 }

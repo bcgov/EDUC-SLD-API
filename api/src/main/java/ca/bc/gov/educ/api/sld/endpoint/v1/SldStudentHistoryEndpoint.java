@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-@RequestMapping("/student-history/v1")
+@RequestMapping("/api/v1/student-history")
 @OpenAPIDefinition(info = @Info(title = "API for SLD Student History data.", description = "This Read API is for Reading the SLD history data of a student in BC from open vms system.", version = "1"), security = {@SecurityRequirement(name = "OAUTH2", scopes = {"READ_SLD_STUDENT_HISTORY"})})
 
 public interface SldStudentHistoryEndpoint {
@@ -25,6 +25,6 @@ public interface SldStudentHistoryEndpoint {
    */
   @GetMapping("/")
   @PreAuthorize("#oauth2.hasScope('READ_SLD_STUDENT')")
-  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK"), @ApiResponse(responseCode = "404", description = "NOT FOUND.")})
+  @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
   List<SldStudentHistory> getSldStudentHistoryByPen(@RequestParam() String pen);
 }

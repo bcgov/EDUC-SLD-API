@@ -28,6 +28,6 @@ public class SldMVCConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(sldRequestInterceptor).addPathPatterns("/**/**/");
+        registry.addInterceptor(sldRequestInterceptor).addPathPatterns("/**");
     }
 }
