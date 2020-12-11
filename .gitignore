@@ -21,3 +21,11 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+api/target
+api/pen-validation-api.iml
+api/.idea
+api/src/main/resources/application-local.properties
+api/src/main/resources/*.http
+
+.idea
+*.iml
