@@ -13,8 +13,8 @@ pipeline{
       OWNER = 'bcgov'
       JOB_NAME = 'main'
       TAG = 'latest'
-      TARGET_ENV = 'dev'
-      STAGING_ENV = 'Dev'
+      TARGET_ENV = 'tools'
+      STAGING_ENV = 'Tools'
       TARGET_ENVIRONMENT = "${NAMESPACE}-${TARGET_ENV}"
 
       APP_DOMAIN = 'apps.silver.devops.gov.bc.ca'
@@ -86,7 +86,7 @@ pipeline{
         }
       }
     }
-	stage('Promote and configure DEV') {
+	stage('Promote and configure TOOLS') {
       steps{
         script{
             extJSHelper.performApiDeploy(STAGING_ENV, TARGET_ENVIRONMENT, REPO_NAME, APP_NAME, JOB_NAME, TAG, TOOLS, TARGET_ENVIRONMENT, APP_DOMAIN, DC_URL, MIN_REPLICAS, MAX_REPLICAS, MIN_CPU, MAX_CPU, MIN_MEM, MAX_MEM, TARGET_ENV, NAMESPACE)
@@ -94,10 +94,10 @@ pipeline{
       }
       post{
         success{
-          echo 'Deployment to Dev was successful'
+          echo 'Deployment to Tools was successful'
         }
         failure{
-          echo 'Deployment to Dev failed'
+          echo 'Deployment to Tools failed'
         }
       }
     }
