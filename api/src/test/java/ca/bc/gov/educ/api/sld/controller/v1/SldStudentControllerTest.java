@@ -47,7 +47,7 @@ public class SldStudentControllerTest {
     mvc = MockMvcBuilders.standaloneSetup(controller)
         .setControllerAdvice(new RestExceptionHandler()).build();
     final File file = new File(
-        Objects.requireNonNull(getClass().getClassLoader().getResource("SldStudentSampleData.json")).getFile()
+        Objects.requireNonNull(getClass().getClassLoader().getResource("SldSampleStudentData.json")).getFile()
     );
     List<SldStudent> entities = new ObjectMapper().readValue(file, new TypeReference<>() {
     });
