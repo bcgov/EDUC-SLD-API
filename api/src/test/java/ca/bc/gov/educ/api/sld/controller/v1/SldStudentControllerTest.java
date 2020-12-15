@@ -67,11 +67,11 @@ public class SldStudentControllerTest {
     this.mvc.perform(get("/api/v1/student/")
         .param("pen", "120164447"))
         .andExpect(status().isOk())
-        .andDo(print());/*
+        .andDo(print())
         .andExpect(jsonPath("$.pen", is("120164447")))
         .andExpect(jsonPath("$.legalSurname", is("Larusso".toUpperCase())))
         .andExpect(jsonPath("$.legalGivenName", is("Daniel".toUpperCase())))
-        .andExpect(jsonPath("$.birthDate", is("19980410")));*/
+        .andExpect(jsonPath("$.birthDate", is("19980410")));
 
   }
 
