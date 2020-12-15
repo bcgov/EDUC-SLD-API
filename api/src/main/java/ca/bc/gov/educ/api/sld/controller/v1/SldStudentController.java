@@ -8,7 +8,6 @@ import ca.bc.gov.educ.api.sld.struct.v1.SldStudent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,7 +39,6 @@ public class SldStudentController implements SldStudentEndpoint {
   @Override
   public List<SldStudent> getSldStudentByPen(String pen) {
     log.debug("Retrieving Student Data by PEN");
-    pen = StringUtils.rightPad(pen, 10);
     List<SldStudentEntity> sldStudentsResponse = getSldStudentService().getSldByPen(pen);
     return sldStudentsResponse.stream().map(mapper::toStructure).collect(Collectors.toList());
   }
