@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class SldStudentHistory {
   private String distNo;
   private String schlNo;
-  private String reportDate;
+  private long reportDate;
   private String localStudentId;
   private String enrolledGradeCode;
   private String sex;

@@ -2,9 +2,9 @@ package ca.bc.gov.educ.api.sld.controller.v1;
 
 import ca.bc.gov.educ.api.sld.SldApiResourceApplication;
 import ca.bc.gov.educ.api.sld.exception.RestExceptionHandler;
-import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentMapper;
-import ca.bc.gov.educ.api.sld.repository.SldRepository;
-import ca.bc.gov.educ.api.sld.struct.v1.SldStudent;
+import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentHistoryMapper;
+import ca.bc.gov.educ.api.sld.repository.SldStudentHistoryRepository;
+import ca.bc.gov.educ.api.sld.struct.v1.SldStudentHistory;
 import ca.bc.gov.educ.api.sld.support.WithMockOAuth2Scope;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,23 +33,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {SldApiResourceApplication.class})
 @SuppressWarnings("squid:S00100")
-public class SldStudentControllerTest {
+public class SldStudentHistoryControllerTest {
   private MockMvc mvc;
-  private static final SldStudentMapper mapper = SldStudentMapper.mapper;
+  private static final SldStudentHistoryMapper mapper = SldStudentHistoryMapper.mapper;
   @Autowired
-  SldRepository repository;
+  SldStudentHistoryRepository repository;
   @Autowired
-  SldStudentController controller;
+  SldStudentHistoryController controller;
 
   @Before
   public void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
     mvc = MockMvcBuilders.standaloneSetup(controller)
-        .setControllerAdvice(new RestExceptionHandler()).build();
+            .setControllerAdvice(new RestExceptionHandler()).build();
     final File file = new File(
-        Objects.requireNonNull(getClass().getClassLoader().getResource("SldSampleStudentData.json")).getFile()
+            Objects.requireNonNull(getClass().getClassLoader().getResource("SldStudentHistorySampleData.json")).getFile()
     );
-    List<SldStudent> entities = new ObjectMapper().readValue(file, new TypeReference<>() {
+    List<SldStudentHistory> entities = new ObjectMapper().readValue(file, new TypeReference<>() {
     });
     repository.saveAll(entities.stream().map(mapper::toModel).collect(Collectors.toList()));
   }
@@ -61,29 +61,29 @@ public class SldStudentControllerTest {
 
   @Test
   @WithMockOAuth2Scope(scope = "READ_SLD_STUDENT")
-  public void testGetSldStudentByPen_GivenPenExistInDB_ShouldReturnStatusOk() throws Exception {
+  public void testGetSldStudentHistoryByPen_GivenPenExistInDB_ShouldReturnStatusOk() throws Exception {
 
     System.out.println(repository.findAllByPen("120164447"));
-    this.mvc.perform(get("/api/v1/student/")
-        .param("pen", "120164447"))
-        .andExpect(status().isOk())
-        .andDo(print())
-        .andExpect(jsonPath("$.length()", is(3)))
-        .andExpect(jsonPath("$[0].pen", is("120164447")))
-        .andExpect(jsonPath("$[0].legalSurname", is("Larusso".toUpperCase())))
-        .andExpect(jsonPath("$[0].legalGivenName", is("Daniel".toUpperCase())))
-        .andExpect(jsonPath("$[0].birthDate", is("19980410")));
+    this.mvc.perform(get("/api/v1/student-history/")
+            .param("pen", "120164447"))
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andExpect(jsonPath("$.length()", is(5)))
+            .andExpect(jsonPath("$[0].pen", is("120164447")))
+            .andExpect(jsonPath("$[0].legalSurName", is("MIYAGI".toUpperCase())))
+            .andExpect(jsonPath("$[0].legalGivenName", is("MR".toUpperCase())))
+            .andExpect(jsonPath("$[0].birthDate", is("19980410")));
 
   }
 
   @Test
   @WithMockOAuth2Scope(scope = "READ_SLD_STUDENT")
-  public void testGetSldStudentByPen_GivenPenDoesNotExistInDB_ShouldReturnEmptyArray() throws Exception {
+  public void testGetPenDemographicsByPen_GivenPenDoesNotExistInDB_ShouldReturnEmptyArray() throws Exception {
 
-    this.mvc.perform(get("/api/v1/student/").param("pen", "7613009911")
-        ).andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()", is(0)));
+    this.mvc.perform(get("/api/v1/student-history/").param("pen", "7613009911")
+    ).andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()", is(0)));
 
 
   }
