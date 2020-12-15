@@ -8,7 +8,6 @@ import ca.bc.gov.educ.api.sld.struct.v1.SldStudentHistory;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,7 +38,6 @@ public class SldStudentHistoryController implements SldStudentHistoryEndpoint {
   @Override
   public List<SldStudentHistory> getSldStudentHistoryByPen(String pen) {
     log.debug("Retrieving Student History Data by PEN");
-    pen = StringUtils.rightPad(pen, 10);
     List<SldStudentHistoryEntity> sldStudentHistoryResponse = getSldStudentHistoryService().getSldByPen(pen);
     return sldStudentHistoryResponse.stream().map(mapper::toStructure).collect(Collectors.toList());
   }
