@@ -70,7 +70,7 @@ public class SldStudentHistoryControllerTest {
             .andDo(print())
             .andExpect(jsonPath("$.length()", is(5)))
             .andExpect(jsonPath("$[0].pen", is("120164447")))
-            .andExpect(jsonPath("$[0].legalSurName", is("MIYAGI".toUpperCase())))
+            .andExpect(jsonPath("$[0].legalSurname", is("MIYAGI".toUpperCase())))
             .andExpect(jsonPath("$[0].legalGivenName", is("MR".toUpperCase())))
             .andExpect(jsonPath("$[0].birthDate", is("19980410")));
 

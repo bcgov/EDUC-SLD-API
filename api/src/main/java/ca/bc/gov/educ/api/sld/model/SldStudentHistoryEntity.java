@@ -39,7 +39,7 @@ public class SldStudentHistoryEntity {
   private String birthDate;
 
   @Column(name = "VLEGAL_SURNAME")
-  private String legalSurName;
+  private String legalSurname;
 
   @Column(name = "VLEGAL_GIVEN_NAME")
   private String legalGivenName;
@@ -48,7 +48,7 @@ public class SldStudentHistoryEntity {
   private String legalMiddleName;
 
   @Column(name = "VUSUAL_SURNAME")
-  private String usualSurName;
+  private String usualSurname;
 
   @Column(name = "VUSUAL_GIVEN_NAME")
   private String usualGivenName;
