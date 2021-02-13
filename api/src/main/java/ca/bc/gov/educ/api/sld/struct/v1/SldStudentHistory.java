@@ -20,10 +20,10 @@ public class SldStudentHistory {
   private String enrolledGradeCode;
   private String sex;
   private String birthDate;
-  private String legalSurName;
+  private String legalSurname;
   private String legalGivenName;
   private String legalMiddleName;
-  private String usualSurName;
+  private String usualSurname;
   private String usualGivenName;
   private String usualMiddleName;
   private String pen;
