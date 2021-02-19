@@ -17,10 +17,10 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class SldStudentIdEntity implements Serializable {
+public class SldStudentId implements Serializable {
   @Column(name = "STUDENT_ID", nullable = false)
   private String studentId;
 
   @Column(name = "REPORT_DATE", nullable = false)
-  private long reportDate;
+  private Long reportDate;
 }

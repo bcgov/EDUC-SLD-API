@@ -21,7 +21,7 @@ import javax.persistence.*;
 public class SldStudentEntity {
 
   @EmbeddedId
-  private SldStudentIdEntity sldStudentIdEntity;
+  private SldStudentId sldStudentId;
 
   @Column(name = "DISTNO")
   private String distNo;

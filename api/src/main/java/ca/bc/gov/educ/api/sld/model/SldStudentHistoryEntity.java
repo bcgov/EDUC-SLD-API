@@ -21,7 +21,7 @@ import javax.persistence.*;
 public class SldStudentHistoryEntity {
 
   @EmbeddedId
-  private SldStudentHistoryIdEntity sldStudentHistoryIdEntity;
+  private SldStudentHistoryId sldStudentHistoryId;
 
   @Column(name = "VDISTNO")
   private String distNo;

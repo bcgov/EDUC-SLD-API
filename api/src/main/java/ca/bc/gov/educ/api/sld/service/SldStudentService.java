@@ -2,18 +2,25 @@ package ca.bc.gov.educ.api.sld.service;
 
 import ca.bc.gov.educ.api.sld.model.SldStudentEntity;
 import ca.bc.gov.educ.api.sld.repository.SldRepository;
+import ca.bc.gov.educ.api.sld.struct.v1.SldStudent;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManagerFactory;
 import java.util.List;
+
+import static ca.bc.gov.educ.api.sld.jooq.Tables.STUDENT;
 
 /**
  * The type sld student service.
  */
 @Service
-public class SldStudentService {
+@Slf4j
+public class SldStudentService extends SldBaseService {
 
   @Getter(AccessLevel.PRIVATE)
   private final SldRepository sldRepository;
@@ -21,10 +28,13 @@ public class SldStudentService {
   /**
    * Instantiates a new sld student service.
    *
+   * @param emf the EntityManagerFactory
    * @param sldRepository the sld repository
+   * @param create the DSLContext
    */
   @Autowired
-  public SldStudentService(final SldRepository sldRepository) {
+  public SldStudentService(final EntityManagerFactory emf, final SldRepository sldRepository, final DSLContext create) {
+    super(emf, create, STUDENT, STUDENT.PEN);
     this.sldRepository = sldRepository;
   }
 
@@ -37,4 +47,21 @@ public class SldStudentService {
   public List<SldStudentEntity> getSldByPen(String pen) {
     return getSldRepository().findAllByPen(pen);
   }
+
+  /**
+   * Update sld students by pen. Only attributes without null will be updated.
+   *
+   * @param pen the PEN
+   * @param sldStudent the Sld Student data
+   * @return the SldStudentEntity list
+   */
+  public List<SldStudentEntity> updateSldStudentsByPen(String pen, SldStudent sldStudent) {
+    int count = updateSldDataByPen(pen, sldStudent);
+    if(count > 0) {
+      return getSldRepository().findAllByPen(pen.equals(sldStudent.getPen()) ? pen : sldStudent.getPen());
+    } else {
+      return List.of();
+    }
+  }
+
 }

@@ -5,6 +5,7 @@ import ca.bc.gov.educ.api.sld.exception.RestExceptionHandler;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentHistoryMapper;
 import ca.bc.gov.educ.api.sld.repository.SldStudentHistoryRepository;
 import ca.bc.gov.educ.api.sld.struct.v1.SldStudentHistory;
+import ca.bc.gov.educ.api.sld.support.SldTestUtil;
 import ca.bc.gov.educ.api.sld.support.WithMockOAuth2Scope;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
+@ActiveProfiles("test")
 @SpringBootTest(classes = {SldApiResourceApplication.class})
 @SuppressWarnings("squid:S00100")
 public class SldStudentHistoryControllerTest {
@@ -46,12 +49,7 @@ public class SldStudentHistoryControllerTest {
     MockitoAnnotations.openMocks(this);
     mvc = MockMvcBuilders.standaloneSetup(controller)
             .setControllerAdvice(new RestExceptionHandler()).build();
-    final File file = new File(
-            Objects.requireNonNull(getClass().getClassLoader().getResource("SldStudentHistorySampleData.json")).getFile()
-    );
-    List<SldStudentHistory> entities = new ObjectMapper().readValue(file, new TypeReference<>() {
-    });
-    repository.saveAll(entities.stream().map(mapper::toModel).collect(Collectors.toList()));
+    SldTestUtil.createSampleDBData("SldStudentHistorySampleData.json", new TypeReference<>() {}, repository, mapper::toModel);
   }
 
   @After
