@@ -1,0 +1,29 @@
+[
+  {
+    "studentId": "120164447",
+    "reportDate": 20030930,
+    "distNo": "069",
+    "schlNo": "69015",
+    "enrolledProgramCode": "17",
+    "careerProgram": "",
+    "pen": "120164447"
+  },
+  {
+    "studentId": "120164447",
+    "reportDate": 20040201,
+    "distNo": "069",
+    "schlNo": "69015",
+    "enrolledProgramCode": "08",
+    "careerProgram": "",
+    "pen": "120164447"
+  },
+  {
+    "studentId": "120164447",
+    "reportDate": 20040930,
+    "distNo": "069",
+    "schlNo": "69015",
+    "enrolledProgramCode": "29",
+    "careerProgram": "",
+    "pen": "120164447"
+  }
+]

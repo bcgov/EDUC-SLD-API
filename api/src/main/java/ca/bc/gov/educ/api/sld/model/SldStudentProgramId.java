@@ -10,17 +10,17 @@ import javax.persistence.Embeddable;
 import java.io.Serializable;
 
 /**
- * The type Sld Student Id.
+ * The type Sld Student Program Id.
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Embeddable
-public class SldStudentHistoryIdEntity implements Serializable {
-  @Column(name = "VLOCAL_STUDENT_ID", nullable = false)
-  private String localStudentId;
+public class SldStudentProgramId implements Serializable {
+  @Column(name = "STUDENT_ID", nullable = false)
+  private String studentId;
 
-  @Column(name = "VREPORT_DATE", nullable = false)
-  private long reportDate;
+  @Column(name = "REPORT_DATE", nullable = false)
+  private Long reportDate;
 }

@@ -25,8 +25,8 @@ public interface SldStudentMapper {
    * @param sldStudentEntity the sld entity
    * @return the sld
    */
-  @Mapping(target = "studentId", source="sldStudentEntity.sldStudentIdEntity.studentId")
-  @Mapping(target = "reportDate", source="sldStudentEntity.sldStudentIdEntity.reportDate")
+  @Mapping(target = "studentId", source="sldStudentEntity.sldStudentId.studentId")
+  @Mapping(target = "reportDate", source="sldStudentEntity.sldStudentId.reportDate")
   SldStudent toStructure(SldStudentEntity sldStudentEntity);
 
   /**

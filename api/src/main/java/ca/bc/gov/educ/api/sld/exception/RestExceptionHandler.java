@@ -117,4 +117,17 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
 
+  /**
+   * Handles EntityNotFoundException. Created to encapsulate errors with more detail.
+   *
+   * @param ex the InvalidPayloadException
+   * @return the ApiError object
+   */
+  @ExceptionHandler(InvalidPayloadException.class)
+  protected ResponseEntity<Object> handleInvalidPayload(
+    InvalidPayloadException ex) {
+    log.error("", ex);
+    return buildResponseEntity(ex.getError());
+  }
+
 }

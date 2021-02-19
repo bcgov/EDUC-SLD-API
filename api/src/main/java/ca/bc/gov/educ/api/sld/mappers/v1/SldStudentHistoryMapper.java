@@ -25,8 +25,8 @@ public interface SldStudentHistoryMapper {
    * @param sldStudentHistoryEntity the sld student history entity
    * @return the sld
    */
-  @Mapping(target = "localStudentId", source="sldStudentHistoryEntity.sldStudentHistoryIdEntity.localStudentId")
-  @Mapping(target = "reportDate", source="sldStudentHistoryEntity.sldStudentHistoryIdEntity.reportDate")
+  @Mapping(target = "localStudentId", source="sldStudentHistoryEntity.sldStudentHistoryId.localStudentId")
+  @Mapping(target = "reportDate", source="sldStudentHistoryEntity.sldStudentHistoryId.reportDate")
   SldStudentHistory toStructure(SldStudentHistoryEntity sldStudentHistoryEntity);
 
   /**

@@ -24,11 +24,10 @@ public interface SldStudentEndpoint {
    * Gets sld student data by pen.
    *
    * @param pen the pen
-   * @return the sld student data by pen
+   * @return the sld student list by pen
    */
   @GetMapping("/")
   @PreAuthorize("#oauth2.hasScope('READ_SLD_STUDENT')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
-  List<SldStudent> getSldStudentByPen(@RequestParam() String pen);
-
+  List<SldStudent> getSldStudentsByPen(@RequestParam() String pen);
 }

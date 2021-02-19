@@ -37,10 +37,9 @@ public class SldStudentController implements SldStudentEndpoint {
   }
 
   @Override
-  public List<SldStudent> getSldStudentByPen(String pen) {
+  public List<SldStudent> getSldStudentsByPen(String pen) {
     log.debug("Retrieving Student Data by PEN");
     List<SldStudentEntity> sldStudentsResponse = getSldStudentService().getSldByPen(pen);
     return sldStudentsResponse.stream().map(mapper::toStructure).collect(Collectors.toList());
   }
-
 }

@@ -1,9 +1,8 @@
 package ca.bc.gov.educ.api.sld.struct.v1;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * The type sld student.
@@ -16,7 +15,7 @@ public class SldStudent {
   private String studentId;
   private String distNo;
   private String schlNo;
-  private long reportDate;
+  private Long reportDate;
   private String localStudentId;
   private String adultTotalCrsHours;
   private String enrolledGradeCode;
