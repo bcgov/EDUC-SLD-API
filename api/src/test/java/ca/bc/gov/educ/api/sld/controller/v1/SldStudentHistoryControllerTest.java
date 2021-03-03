@@ -22,6 +22,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.io.IOException;
 
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -57,6 +58,7 @@ public class SldStudentHistoryControllerTest {
 
     System.out.println(repository.findAllByPen("120164447"));
     this.mvc.perform(get("/api/v1/student-history/")
+            .with(jwt().jwt((jwt) -> jwt.claim("scope", "READ_SLD_STUDENT")))
             .param("pen", "120164447"))
             .andExpect(status().isOk())
             .andDo(print())
@@ -72,6 +74,7 @@ public class SldStudentHistoryControllerTest {
   public void testGetPenDemographicsByPen_GivenPenDoesNotExistInDB_ShouldReturnEmptyArray() throws Exception {
 
     this.mvc.perform(get("/api/v1/student-history/").param("pen", "7613009911")
+            .with(jwt().jwt((jwt) -> jwt.claim("scope", "READ_SLD_STUDENT")))
     ).andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()", is(0)));
