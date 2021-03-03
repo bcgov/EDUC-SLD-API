@@ -24,7 +24,7 @@ public interface SldStudentHistoryEndpoint {
    * @return the sld student history data by pen
    */
   @GetMapping("/")
-  @PreAuthorize("#oauth2.hasScope('READ_SLD_STUDENT')")
+  @PreAuthorize("hasAuthority('SCOPE_READ_SLD_STUDENT')")
   @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK")})
   List<SldStudentHistory> getSldStudentHistoryByPen(@RequestParam() String pen);
 }

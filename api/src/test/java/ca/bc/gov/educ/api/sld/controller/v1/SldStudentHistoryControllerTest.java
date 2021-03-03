@@ -4,27 +4,22 @@ import ca.bc.gov.educ.api.sld.SldApiResourceApplication;
 import ca.bc.gov.educ.api.sld.exception.RestExceptionHandler;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentHistoryMapper;
 import ca.bc.gov.educ.api.sld.repository.SldStudentHistoryRepository;
-import ca.bc.gov.educ.api.sld.struct.v1.SldStudentHistory;
 import ca.bc.gov.educ.api.sld.support.SldTestUtil;
-import ca.bc.gov.educ.api.sld.support.WithMockOAuth2Scope;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,8 +30,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @SpringBootTest(classes = {SldApiResourceApplication.class})
+@AutoConfigureMockMvc
 @SuppressWarnings("squid:S00100")
 public class SldStudentHistoryControllerTest {
+  @Autowired
   private MockMvc mvc;
   private static final SldStudentHistoryMapper mapper = SldStudentHistoryMapper.mapper;
   @Autowired
@@ -47,8 +44,6 @@ public class SldStudentHistoryControllerTest {
   @Before
   public void setUp() throws IOException {
     MockitoAnnotations.openMocks(this);
-    mvc = MockMvcBuilders.standaloneSetup(controller)
-            .setControllerAdvice(new RestExceptionHandler()).build();
     SldTestUtil.createSampleDBData("SldStudentHistorySampleData.json", new TypeReference<>() {}, repository, mapper::toModel);
   }
 
@@ -58,7 +53,6 @@ public class SldStudentHistoryControllerTest {
   }
 
   @Test
-  @WithMockOAuth2Scope(scope = "READ_SLD_STUDENT")
   public void testGetSldStudentHistoryByPen_GivenPenExistInDB_ShouldReturnStatusOk() throws Exception {
 
     System.out.println(repository.findAllByPen("120164447"));
@@ -75,7 +69,6 @@ public class SldStudentHistoryControllerTest {
   }
 
   @Test
-  @WithMockOAuth2Scope(scope = "READ_SLD_STUDENT")
   public void testGetPenDemographicsByPen_GivenPenDoesNotExistInDB_ShouldReturnEmptyArray() throws Exception {
 
     this.mvc.perform(get("/api/v1/student-history/").param("pen", "7613009911")
