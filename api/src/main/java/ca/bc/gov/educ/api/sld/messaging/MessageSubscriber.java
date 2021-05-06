@@ -23,7 +23,6 @@ import static ca.bc.gov.educ.api.sld.constant.Topics.SLD_API_TOPIC;
 @Component
 @Slf4j
 public class MessageSubscriber {
-  private final Executor messageProcessingThreads;
   private final EventHandlerDelegatorService eventHandlerDelegatorServiceV1;
   private final Connection connection;
 
@@ -37,8 +36,7 @@ public class MessageSubscriber {
   public MessageSubscriber(final Connection connection, EventHandlerDelegatorService eventHandlerDelegatorServiceV1) {
     this.eventHandlerDelegatorServiceV1 = eventHandlerDelegatorServiceV1;
     this.connection = connection;
-    messageProcessingThreads = new EnhancedQueueExecutor.Builder().setThreadFactory(new ThreadFactoryBuilder().setNameFormat("nats-message-subscriber-%d").build())
-      .setCorePoolSize(1).setMaximumPoolSize(1).build();
+
   }
 
   /**
@@ -67,7 +65,7 @@ public class MessageSubscriber {
           }
           //place holder to have different versions
           if ("V1".equalsIgnoreCase(event.getPayloadVersion())) {
-            messageProcessingThreads.execute(() -> eventHandlerDelegatorServiceV1.handleEvent(event, message));
+            eventHandlerDelegatorServiceV1.handleEvent(event, message);
           }
         } catch (final Exception e) {
           log.error("Exception ", e);

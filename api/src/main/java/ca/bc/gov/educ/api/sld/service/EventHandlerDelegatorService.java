@@ -2,10 +2,16 @@ package ca.bc.gov.educ.api.sld.service;
 
 import ca.bc.gov.educ.api.sld.messaging.MessagePublisher;
 import ca.bc.gov.educ.api.sld.struct.v1.Event;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.nats.client.Message;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.jboss.threads.EnhancedQueueExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -26,6 +32,7 @@ public class EventHandlerDelegatorService {
   public static final String PAYLOAD_LOG = "payload is :: {}";
   private final MessagePublisher messagePublisher;
   private final EventHandlerService eventHandlerService;
+  private final ExecutorService messageProcessingThread;
 
   /**
    * Instantiates a new Event handler delegator service.
@@ -37,6 +44,8 @@ public class EventHandlerDelegatorService {
   public EventHandlerDelegatorService(MessagePublisher messagePublisher, EventHandlerService eventHandlerService) {
     this.messagePublisher = messagePublisher;
     this.eventHandlerService = eventHandlerService;
+    messageProcessingThread = new EnhancedQueueExecutor.Builder().setThreadFactory(new ThreadFactoryBuilder().setNameFormat("nats-message-subscriber-%d").build())
+      .setCorePoolSize(1).setMaximumPoolSize(1).build();
   }
 
   /**
@@ -46,28 +55,56 @@ public class EventHandlerDelegatorService {
    * @param message the message
    */
   public void handleEvent(final Event event, final Message message) {
-    byte[] response;
+    final byte[] response;
     boolean isSynchronous = message.getReplyTo() != null;
     try {
       switch (event.getEventType()) {
         case UPDATE_SLD_STUDENTS:
-          log.info("received update sld students event :: {}", event.getSagaId());
-          log.trace(PAYLOAD_LOG, event.getEventPayload());
-          response = eventHandlerService.handleUpdateStudentsEvent(event);
+          val updateStudentsEvent = messageProcessingThread.submit( () -> {
+            log.info("received update sld students event :: {}", event.getSagaId());
+            log.trace(PAYLOAD_LOG, event.getEventPayload());
+            return eventHandlerService.handleUpdateStudentsEvent(event);
+          }).get(30, TimeUnit.SECONDS);
           log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
-          publishToNATS(event, message, isSynchronous, response);
+          publishToNATS(event, message, isSynchronous, updateStudentsEvent);
           break;
         case UPDATE_SLD_DIA_STUDENTS:
-          log.info("received update sld dia students event :: {}", event.getSagaId());
+          val updateDiaStudentsEvent=
+          messageProcessingThread.submit(()-> {
+            log.info("received update sld dia students event :: {}", event.getSagaId());
+            log.trace(PAYLOAD_LOG, event.getEventPayload());
+            return  eventHandlerService.handleUpdateDiaStudentsEvent(event);
+          }).get(30, TimeUnit.SECONDS);
+          log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
+          publishToNATS(event, message, isSynchronous, updateDiaStudentsEvent);
+          break;
+        case UPDATE_SLD_STUDENT_PROGRAMS:
+          val updateStudentProgramsEvent = messageProcessingThread.submit(()-> {
+            log.info("received update sld student programs event :: {}", event.getSagaId());
+            log.trace(PAYLOAD_LOG, event.getEventPayload());
+            return eventHandlerService.handleUpdateStudentProgramsEvent(event);
+          }).get(30, TimeUnit.SECONDS);
+          log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
+          publishToNATS(event, message, isSynchronous, updateStudentProgramsEvent);
+          break;
+        case GET_SLD_STUDENTS:
+          log.info("received get sld students event :: {}", event.getSagaId());
           log.trace(PAYLOAD_LOG, event.getEventPayload());
-          response = eventHandlerService.handleUpdateDiaStudentsEvent(event);
+          response = eventHandlerService.handleGetStudentsEvent(event);
           log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
           publishToNATS(event, message, isSynchronous, response);
           break;
-        case UPDATE_SLD_STUDENT_PROGRAMS:
-          log.info("received update sld student programs event :: {}", event.getSagaId());
+        case GET_SLD_DIA_STUDENTS:
+          log.info("received get sld dia students event :: {}", event.getSagaId());
           log.trace(PAYLOAD_LOG, event.getEventPayload());
-          response = eventHandlerService.handleUpdateStudentProgramsEvent(event);
+          response = eventHandlerService.handleGetDiaStudentsEvent(event);
+          log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
+          publishToNATS(event, message, isSynchronous, response);
+          break;
+        case GET_SLD_STUDENT_PROGRAMS:
+          log.info("received get sld student programs event :: {}", event.getSagaId());
+          log.trace(PAYLOAD_LOG, event.getEventPayload());
+          response = eventHandlerService.handleGetStudentProgramsEvent(event);
           log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
           publishToNATS(event, message, isSynchronous, response);
           break;
@@ -76,6 +113,7 @@ public class EventHandlerDelegatorService {
           break;
       }
     } catch (final Exception e) {
+      Thread.currentThread().interrupt();
       log.error("Exception", e);
     }
   }
