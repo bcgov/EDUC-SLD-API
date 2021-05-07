@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.sld.exception.SldRuntimeException;
 import ca.bc.gov.educ.api.sld.util.BeanUtil;
 import com.google.common.base.CaseFormat;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.jooq.*;
 
 import javax.persistence.EntityManager;
@@ -60,7 +61,9 @@ public abstract class SldBaseService {
     try {
       var jooqQuery = buildUpdate(pen, sldData);
       tx.begin();
-      var nativeQuery = em.createNativeQuery(jooqQuery.getSQL()).setHint("javax.persistence.query.timeout", 10000);
+      val sql = jooqQuery.getSQL();
+      log.info("generated sql is :: {}", sql);
+      var nativeQuery = em.createNativeQuery(sql).setHint("javax.persistence.query.timeout", 10000);
       var values = jooqQuery.getBindValues();
       IntStream.range(0, values.size()).forEach(index -> nativeQuery.setParameter(index + 1, values.get(index)));
       rowsUpdated = nativeQuery.executeUpdate();
