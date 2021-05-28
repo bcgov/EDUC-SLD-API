@@ -28,7 +28,7 @@ public class SldRequestInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         int status = response.getStatus();
-        if(status >= 200 && status < 300) {
+        if(status == 404 || (status >= 200 && status < 300)) {
             log.info("RESPONSE STATUS: {}", status);
         } else {
             log.error("RESPONSE STATUS: {}", status);
