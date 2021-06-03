@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +36,6 @@ public class SldStudentController implements SldStudentEndpoint {
 
   @Override
   public List<SldStudent> getSldStudentsByPen(String pen) {
-    return getSldStudentService().getSldByPen(pen).stream().map(mapper::toStructure).collect(Collectors.toList());
+    return getSldStudentService().getSldByPen(pen).stream().filter(Objects::nonNull).map(mapper::toStructure).collect(Collectors.toList());
   }
 }
