@@ -1,21 +1,15 @@
 package ca.bc.gov.educ.api.sld.health;
 
+import ca.bc.gov.educ.api.sld.controller.v1.BaseSLDAPITest;
 import io.nats.client.Connection;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.Status;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@RunWith(SpringRunner.class)
-public class SldAPICustomHealthCheckTest {
+public class SldAPICustomHealthCheckTest extends BaseSLDAPITest {
 
   @Autowired
   Connection natsConnection;
