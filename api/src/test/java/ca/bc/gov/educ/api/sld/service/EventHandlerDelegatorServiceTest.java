@@ -1,5 +1,6 @@
 package ca.bc.gov.educ.api.sld.service;
 
+import ca.bc.gov.educ.api.sld.controller.v1.BaseSLDAPITest;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldDiaStudentMapper;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentMapper;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentProgramMapper;
@@ -15,16 +16,12 @@ import io.nats.client.Message;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.json.BasicJsonTester;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 
@@ -33,13 +30,7 @@ import static ca.bc.gov.educ.api.sld.constant.EventType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-/**
- * The type Event Handler Delegator test.
- */
-@RunWith(SpringRunner.class)
-@ActiveProfiles("test")
-@SpringBootTest
-public class EventHandlerDelegatorServiceTest {
+public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   @Autowired
   private EventHandlerService eventHandlerService;
   @Autowired
@@ -61,9 +52,9 @@ public class EventHandlerDelegatorServiceTest {
 
   private static final BasicJsonTester jsonTester = new BasicJsonTester(EventHandlerDelegatorServiceTest.class);
 
-  private static String pen = "120164447";
-  private static String nonExistentPen = "000000000";
-  private static String newPen = "10010001";
+  private static final String pen = "120164447";
+  private static final String nonExistentPen = "000000000";
+  private static final String newPen = "10010001";
 
   private EventHandlerDelegatorService eventHandlerDelegatorService;
 
