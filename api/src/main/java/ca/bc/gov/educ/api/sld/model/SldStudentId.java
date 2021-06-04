@@ -18,8 +18,15 @@ import java.io.Serializable;
 @NoArgsConstructor
 @Embeddable
 public class SldStudentId implements Serializable {
-  @Column(name = "STUDENT_ID", nullable = false)
-  private String studentId;
+
+  @Column(name = "DISTNO")
+  private String distNo;
+
+  @Column(name = "SCHLNO")
+  private String schlNo;
+
+  @Column(name = "PEN")
+  private String pen;
 
   @Column(name = "REPORT_DATE", nullable = false)
   private Long reportDate;

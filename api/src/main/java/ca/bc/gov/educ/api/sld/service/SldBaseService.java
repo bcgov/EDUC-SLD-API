@@ -7,9 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jooq.*;
 
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
 import java.util.stream.IntStream;
 
 
@@ -33,10 +31,10 @@ public abstract class SldBaseService {
   /**
    * Instantiates a new sld service.
    *
-   * @param emf the EntityManagerFactory
+   * @param emf    the EntityManagerFactory
    * @param create the DSLContext
    */
-  public SldBaseService(final EntityManagerFactory emf, final DSLContext create, final Table<?> table, final TableField<?, String> penField) {
+  protected SldBaseService(final EntityManagerFactory emf, final DSLContext create, final Table<?> table, final TableField<?, String> penField) {
     this.emf = emf;
     this.create = create;
     this.table = table;
@@ -51,9 +49,9 @@ public abstract class SldBaseService {
    * @return the SldStudentEntity list
    */
   public <T> int updateSldDataByPen(String pen, T sldData) {
-    EntityManager em = this.emf.createEntityManager();
+    val em = this.emf.createEntityManager();
 
-    EntityTransaction tx = em.getTransaction();
+    val tx = em.getTransaction();
 
     int rowsUpdated;
 
@@ -89,7 +87,7 @@ public abstract class SldBaseService {
    * @return the jooq Query
    */
   private <T> Query buildUpdate(String pen, T sldData) {
-    Record record = create.newRecord(table);
+    Record sldRecord = create.newRecord(table);
 
     BeanUtil.getFields(sldData).forEach(field -> {
       try {
@@ -103,14 +101,14 @@ public abstract class SldBaseService {
           }
 
           var tableField = (Field<Object>) table.getClass().getField(propertyName).get(table);
-          record.set(tableField, fieldValue);
+          sldRecord.set(tableField, fieldValue);
         }
       } catch (IllegalAccessException | NoSuchFieldException e) {
         throw new SldRuntimeException("Failed to build update sql", e);
       }
     });
 
-    return create.update(table).set(record)
+    return create.update(table).set(sldRecord)
       .where(penField.eq(pen));
   }
 }

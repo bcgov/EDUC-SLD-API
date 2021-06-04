@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.sld.service;
 
 import ca.bc.gov.educ.api.sld.model.SldStudentEntity;
+import ca.bc.gov.educ.api.sld.model.SldStudentId;
 import ca.bc.gov.educ.api.sld.repository.SldRepository;
 import ca.bc.gov.educ.api.sld.struct.v1.SldStudent;
 import lombok.AccessLevel;
@@ -8,6 +9,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManagerFactory;
@@ -45,7 +47,7 @@ public class SldStudentService extends SldBaseService {
    * @return the sld by pen
    */
   public List<SldStudentEntity> getSldByPen(String pen) {
-    return getSldRepository().findAllByPen(pen);
+    return getSldRepository().findAll(Example.of(SldStudentEntity.builder().sldStudentId(SldStudentId.builder().pen(pen).build()).build()));
   }
 
   /**
@@ -58,7 +60,7 @@ public class SldStudentService extends SldBaseService {
   public List<SldStudentEntity> updateSldStudentsByPen(String pen, SldStudent sldStudent) {
     int count = updateSldDataByPen(pen, sldStudent);
     if(count > 0) {
-      return getSldRepository().findAllByPen(pen.equals(sldStudent.getPen()) ? pen : sldStudent.getPen());
+      return getSldRepository().findAll(Example.of(SldStudentEntity.builder().sldStudentId(SldStudentId.builder().pen(pen.equals(sldStudent.getPen()) ? pen : sldStudent.getPen()).build()).build()));
     } else {
       return List.of();
     }

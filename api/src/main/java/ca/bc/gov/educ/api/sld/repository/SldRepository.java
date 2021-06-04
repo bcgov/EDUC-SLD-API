@@ -2,6 +2,7 @@ package ca.bc.gov.educ.api.sld.repository;
 
 import ca.bc.gov.educ.api.sld.model.SldStudentEntity;
 import ca.bc.gov.educ.api.sld.model.SldStudentId;
+import org.springframework.data.domain.Example;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -16,8 +17,7 @@ public interface SldRepository extends CrudRepository<SldStudentEntity, SldStude
   /**
    * Find by pen optional.
    *
-   * @param pen the pen
-   * @return the optional
+   * @param studentEntityExample @return the optional
    */
-  List<SldStudentEntity> findAllByPen(String pen);
+  List<SldStudentEntity> findAll(Example<SldStudentEntity> studentEntityExample);
 }

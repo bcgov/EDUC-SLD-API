@@ -6,7 +6,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Immutable;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 /**
  * The type sld student entity.
@@ -23,11 +26,9 @@ public class SldStudentEntity {
   @EmbeddedId
   private SldStudentId sldStudentId;
 
-  @Column(name = "DISTNO")
-  private String distNo;
 
-  @Column(name = "SCHLNO")
-  private String schlNo;
+  @Column(name = "STUDENT_ID")
+  private String studentId;
 
   @Column(name = "LOCAL_STUDENT_ID")
   private String localStudentId;
@@ -86,8 +87,6 @@ public class SldStudentEntity {
   @Column(name = "USUAL_MIDDLE_NAME")
   private String usualMiddleName;
 
-  @Column(name = "PEN")
-  private String pen;
 
   @Column(name = "BAND_CODE")
   private String bandCode;
