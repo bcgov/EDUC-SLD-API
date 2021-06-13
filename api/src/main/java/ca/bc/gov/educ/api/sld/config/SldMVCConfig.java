@@ -14,20 +14,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class SldMVCConfig implements WebMvcConfigurer {
 
     @Getter(AccessLevel.PRIVATE)
-    private final SldRequestInterceptor sldRequestInterceptor;
+    private final RequestResponseInterceptor requestResponseInterceptor;
 
   /**
    * Instantiates a new sld mvc config.
    *
-   * @param sldRequestInterceptor the sld request interceptor
+   * @param requestResponseInterceptor the sld request interceptor
    */
   @Autowired
-    public SldMVCConfig(final SldRequestInterceptor sldRequestInterceptor){
-        this.sldRequestInterceptor = sldRequestInterceptor;
-    }
+  public SldMVCConfig(final RequestResponseInterceptor requestResponseInterceptor) {
+    this.requestResponseInterceptor = requestResponseInterceptor;
+  }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(sldRequestInterceptor).addPathPatterns("/**");
-    }
+  @Override
+  public void addInterceptors(final InterceptorRegistry registry) {
+    registry.addInterceptor(this.requestResponseInterceptor).addPathPatterns("/**");
+  }
 }

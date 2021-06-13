@@ -37,32 +37,38 @@ $KCADM_FILE_BIN_FOLDER/kcadm.sh create client-scopes -r $SOAM_KC_REALM_ID --body
 ###########################################################
 SPLUNK_URL="gww.splunk.educ.gov.bc.ca"
 FLB_CONFIG="[SERVICE]
-  Flush        1
-  Daemon       Off
-  Log_Level    debug
-  HTTP_Server   On
-  HTTP_Listen   0.0.0.0
-  HTTP_Port     2020
+   Flush        1
+   Daemon       Off
+   Log_Level    debug
+   HTTP_Server   On
+   HTTP_Listen   0.0.0.0
+   Parsers_File parsers.conf
 [INPUT]
-  Name   tail
-  Path   /mnt/log/*
-  Mem_Buf_Limit 20MB
+   Name   tail
+   Path   /mnt/log/*
+   Parser docker
+   Mem_Buf_Limit 20MB
 [FILTER]
-  Name record_modifier
-  Match *
-  Record hostname \${HOSTNAME}
+   Name record_modifier
+   Match *
+   Record hostname \${HOSTNAME}
 [OUTPUT]
-  Name   stdout
-  Match  *
+   Name   stdout
+   Match  *
 [OUTPUT]
-  Name  splunk
-  Match *
-  Host  $SPLUNK_URL
-  Port  443
-  TLS         On
-  TLS.Verify  Off
-  Message_Key $APP_NAME
-  Splunk_Token $SPLUNK_TOKEN
+   Name  splunk
+   Match *
+   Host  $SPLUNK_URL
+   Port  443
+   TLS         On
+   TLS.Verify  Off
+   Message_Key $APP_NAME
+   Splunk_Token $SPLUNK_TOKEN
+"
+PARSER_CONFIG="
+[PARSER]
+    Name        docker
+    Format      json
 "
 
 echo Creating config map "$APP_NAME"-config-map
@@ -74,4 +80,4 @@ oc project $OPENSHIFT_NAMESPACE-$envValue
 oc set env --from=configmap/$APP_NAME-config-map dc/$APP_NAME-$SOAM_KC_REALM_ID
 
 echo Creating config map "$APP_NAME"-flb-sc-config-map
-oc create -n "$OPENSHIFT_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --dry-run -o yaml | oc apply -f -
+oc create -n "$OPENSHIFT_NAMESPACE"-"$envValue" configmap "$APP_NAME"-flb-sc-config-map --from-literal=fluent-bit.conf="$FLB_CONFIG" --from-literal=parsers.conf="$PARSER_CONFIG" --dry-run -o yaml | oc apply -f -

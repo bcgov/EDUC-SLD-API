@@ -20,6 +20,7 @@
       src/main/java/ca/bc/gov/educ/api/sld/constant/**,
       src/main/java/ca/bc/gov/educ/api/sld/messaging/**,
       src/main/java/ca/bc/gov/educ/api/sld/jooq/**,
+      src/main/java/ca/bc/gov/educ/api/sld/helpers/**,
     </sonar.exclusions>
     <java.version>11</java.version>
 
