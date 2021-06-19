@@ -39,16 +39,6 @@ public class SldDiaStudentService extends SldBaseService {
   }
 
   /**
-   * Gets DiaStudents by pen.
-   *
-   * @param pen the pen
-   * @return the DiaStudent list
-   */
-  public List<SldDiaStudentEntity> getDiaStudentByPen(String pen) {
-    return getSldDiaStudentRepository().findAllBySldDiaStudentIdPen(pen);
-  }
-
-  /**
    * Update DiaStudents by pen.
    *
    * @param pen the PEN

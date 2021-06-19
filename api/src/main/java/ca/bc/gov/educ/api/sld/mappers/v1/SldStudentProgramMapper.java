@@ -25,8 +25,11 @@ public interface SldStudentProgramMapper {
    * @param sldStudentProgramEntity the sld student program entity
    * @return the sld student program
    */
-  @Mapping(target = "studentId", source="sldStudentProgramEntity.sldStudentProgramId.studentId")
-  @Mapping(target = "reportDate", source="sldStudentProgramEntity.sldStudentProgramId.reportDate")
+  @Mapping(target = "distNo", source = "sldStudentProgramEntity.sldStudentProgramId.distNo")
+  @Mapping(target = "pen", source = "sldStudentProgramEntity.sldStudentProgramId.pen")
+  @Mapping(target = "schlNo", source = "sldStudentProgramEntity.sldStudentProgramId.schlNo")
+  @Mapping(target = "enrolledProgramCode", source = "sldStudentProgramEntity.sldStudentProgramId.enrolledProgramCode")
+  @Mapping(target = "reportDate", source = "sldStudentProgramEntity.sldStudentProgramId.reportDate")
   SldStudentProgram toStructure(SldStudentProgramEntity sldStudentProgramEntity);
 
   /**
