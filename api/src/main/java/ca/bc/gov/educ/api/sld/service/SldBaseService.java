@@ -1,23 +1,20 @@
 package ca.bc.gov.educ.api.sld.service;
 
 import ca.bc.gov.educ.api.sld.exception.SldRuntimeException;
-import ca.bc.gov.educ.api.sld.util.BeanUtil;
-import com.google.common.base.CaseFormat;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.jooq.*;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.persistence.EntityManagerFactory;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.IntStream;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
  * The type sld base service.
  */
 @Slf4j
-public abstract class SldBaseService {
+public abstract class SldBaseService<T> implements SldService<T> {
   /**
    * The Duplicate pen suffix.
    */
@@ -27,94 +24,26 @@ public abstract class SldBaseService {
    */
   private final EntityManagerFactory emf;
 
-  private final DSLContext create;
-
-  private final TableField<?, String> penField;
-
-  private final Table<?> table;
 
   /**
    * Instantiates a new sld service.
    *
-   * @param emf    the EntityManagerFactory
-   * @param create the DSLContext
+   * @param emf the EntityManagerFactory
    */
-  protected SldBaseService(final EntityManagerFactory emf, final DSLContext create, final Table<?> table, final TableField<?, String> penField) {
+  protected SldBaseService(final EntityManagerFactory emf) {
     this.emf = emf;
-    this.create = create;
-    this.table = table;
-    this.penField = penField;
   }
 
-  /**
-   * Update sld data by pen.
-   *
-   * @param pen     the PEN
-   * @param sldData the Sld Student data
-   * @return the SldStudentEntity list
-   */
-  public <T> int updateSldDataByPen(final String pen, final T sldData) {
-    val em = this.emf.createEntityManager();
-
-    val tx = em.getTransaction();
-
-    int rowsUpdated;
-
-    // below timeout is in milli seconds, so it is 10 seconds.
-    try {
-      final var jooqQuery = this.buildUpdate(pen, sldData);
-      tx.begin();
-      val sql = jooqQuery.getSQL();
-      log.info("generated sql is :: {}", sql);
-      final var nativeQuery = em.createNativeQuery(sql).setHint("javax.persistence.query.timeout", 10000);
-      final var values = jooqQuery.getBindValues();
-      IntStream.range(0, values.size()).forEach(index -> nativeQuery.setParameter(index + 1, values.get(index)));
-      rowsUpdated = nativeQuery.executeUpdate();
-      tx.commit();
-    } catch (final Exception e) {
-      log.error("Error occurred saving entity " + e.getMessage());
-      tx.rollback();
-      throw new SldRuntimeException("Error occurred saving entity", e);
-    } finally {
-      if (em.isOpen()) {
-        em.close();
-      }
+  protected List<T> update(final String pen, final String mergedToPen) {
+    final List<T> mergedFromPenData = this.findExistingDataByPen(pen);
+    final List<T> mergedToPenData = this.findExistingDataByPen(mergedToPen);
+    final List<String> updateStatements = this.prepareUpdateStatement(mergedFromPenData, mergedToPenData, mergedToPen);
+    final int count = this.bulkUpdate(updateStatements);
+    if (count > 0) {
+      return this.findExistingDataByPen(pen.equals(mergedToPen) ? pen : mergedToPen);
+    } else {
+      return List.of();
     }
-
-    return rowsUpdated;
-  }
-
-  /**
-   * Build update string.
-   *
-   * @param pen     the PEN
-   * @param sldData the new SLD data
-   * @return the jooq Query
-   */
-  private <T> Query buildUpdate(final String pen, final T sldData) {
-    final Record sldRecord = this.create.newRecord(this.table);
-
-    BeanUtil.getFields(sldData).forEach(field -> {
-      try {
-        final var fieldValue = BeanUtil.getFieldValue(field, sldData);
-        if (fieldValue != null) {
-          var propertyName = CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, field.getName());
-          if (field.getName().equals("distNo")) {
-            propertyName = "DISTNO";
-          } else if (field.getName().equals("schlNo")) {
-            propertyName = "SCHLNO";
-          }
-
-          final var tableField = (Field<Object>) this.table.getClass().getField(propertyName).get(this.table);
-          sldRecord.set(tableField, fieldValue);
-        }
-      } catch (final IllegalAccessException | NoSuchFieldException e) {
-        throw new SldRuntimeException("Failed to build update sql", e);
-      }
-    });
-
-    return this.create.update(this.table).set(sldRecord)
-      .where(this.penField.eq(pen));
   }
 
   /**
@@ -179,4 +108,90 @@ public abstract class SldBaseService {
       duplicatePenSuffix.add("Z");
     }
   }
+
+  /**
+   * Prepare update statement list.
+   * **
+   * * Using the STUDENT table as an example, here is how the 'tie breaker' is
+   * * assigned to a PEN within this program:
+   * * Student is opened as STUDENT_OLD for read/update and STUDENT_NEW for read
+   * * only.
+   * * Read (loop) STUDENT_OLD using ('old PEN'[1:9] + "@") in the order of
+   * * DISTNO, SCHLNO, REPORT_DATE. For any existing STUDENT_OLD record:
+   * * If DISTNO, SCHLNO or REPORT_DATE are different from the previous
+   * * STUDENT_OLD record (if any) for this PEN then:
+   * * Read (loop) STUDENT_NEW using the DISTNO, SCHLNO, REPORT_DATE of
+   * * STUDENT_OLD and ('new PEN'[1:9] + "@"), in order to find out if
+   * * 'new PEN' already exists for the same school and report date and if so,
+   * * what the highest value of the tie-breaker' is (if any) for 'new PEN'.
+   * * Most of the time, 'new PEN' will not exist for the same DISTNO, SCHLNO
+   * * and REPORT_DATE or else the school would have reported the same student
+   * * under two different PENs in the same 1701 collection.
+   * * The 'old PEN' in STUDENT_OLD is changed to 'new PEN'[1:9] + the next
+   * * value of 'tie breaker' that is greater than the highest value found
+   * * above. The new value of tie-breaker is saved as the highest value and
+   * * the looped read of STUDENT_OLD continues.
+   * *
+   * **
+   *
+   * @param mergedFromPenData the merged from pen data
+   * @param mergedToPenData   the merged to pen data
+   * @param mergedToPen       the merged to pen
+   * @return the list
+   */
+
+  protected List<String> prepareUpdateStatement(final List<T> mergedFromPenData, final List<T> mergedToPenData, final String mergedToPen) {
+    final List<String> updateStatements = new ArrayList<>();
+    final Map<String, List<String>> distSchoolReportDatePenMap = this.createMergeToPenMap(mergedToPenData);
+    for (val mergedFromPen : mergedFromPenData) {
+      val key = this.getKey(mergedFromPen);
+      Optional<String> highestPenOptional = Optional.empty();
+      if (distSchoolReportDatePenMap.containsKey(key)) {
+        final List<String> penList = distSchoolReportDatePenMap.get(key).stream()
+          .sorted(Comparator.reverseOrder())
+          .collect(Collectors.toList());
+        final String highestPen = penList.get(0);
+        final String nextPen;
+        if (highestPen.trim().length() == 10) { // if it is 10 characters it already has a duplicate record.
+          val lastCharacter = StringUtils.substring(highestPen, 9, 10);
+          val index = duplicatePenSuffix.indexOf(lastCharacter);
+          nextPen = StringUtils.substring(highestPen, 0, 9).concat(duplicatePenSuffix.get(index + 1)); // get the first 9 characters then append the next alphabet for the duplicate entry.
+        } else {
+          nextPen = highestPen.concat("D"); // first duplicate, starts with D
+        }
+        highestPenOptional = Optional.of(nextPen);
+      }
+      final String updatedPen = highestPenOptional.orElse(mergedToPen);
+      updateStatements.add(this.createUpdateStatementForEachRecord(updatedPen, mergedFromPen));
+    }
+    return updateStatements;
+  }
+
+
+  protected Map<String, List<String>> createMergeToPenMap(final List<T> mergedToPenData) {
+    final Map<String, List<String>> penMap = new HashMap<>();
+    mergedToPenData.forEach(el -> {
+      final String key = this.getKey(el);
+      if (penMap.containsKey(key)) {
+        val penList = penMap.get(key);
+        penList.add(this.getPen(el));
+      } else {
+        final List<String> penList = new ArrayList<>();
+        penList.add(this.getPen(el));
+        penMap.put(key, penList);
+      }
+    });
+    return penMap;
+  }
+
+  // below methods are child specific implementation.
+  protected abstract String getPen(T t);
+
+  protected abstract String createUpdateStatementForEachRecord(String updatedPen, T mergedFromPen);
+
+  protected abstract String getKey(T mergedFromPen);
+
+  protected abstract List<T> findExistingDataByPen(String pen);
+
+
 }

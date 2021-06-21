@@ -45,6 +45,8 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   @Autowired
   private SldStudentProgramService sldStudentProgramService;
   @Autowired
+  private SldDiaStudentService sldDiaStudentService;
+  @Autowired
   private SldStudentService sldStudentService;
   @Autowired
   private EventHandlerService eventHandlerService;
@@ -137,13 +139,14 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
     verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
-
+    val results = this.sldDiaStudentService.findExistingStudentsByPen(newPen).stream().map(el -> el.getSldDiaStudentId().getPen()).collect(Collectors.toList());
+    assertThat(results).contains(newPen + "D").size().isEqualTo(4);
     final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_DIA_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_DIA_STUDENT_UPDATED);
 
     final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
-    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(3);
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(4);
     assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(newPen);
     assertThat(students).hasJsonPath("$[0].diaSchoolInfoWrong");
   }
