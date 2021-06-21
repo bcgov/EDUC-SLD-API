@@ -167,15 +167,6 @@
       <version>${guava.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.jooq</groupId>
-      <artifactId>jooq</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jooq</groupId>
-      <artifactId>jooq-meta-extensions-hibernate</artifactId>
-      <version>3.14.7</version>
-    </dependency>
-    <dependency>
       <groupId>io.nats</groupId>
       <artifactId>jnats</artifactId>
       <version>${nats.version}</version>

@@ -1,20 +1,27 @@
 package ca.bc.gov.educ.api.sld.service;
 
+import ca.bc.gov.educ.api.sld.constant.EntityName;
+import ca.bc.gov.educ.api.sld.constant.EventOutcome;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldDiaStudentMapper;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentMapper;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentProgramMapper;
+import ca.bc.gov.educ.api.sld.model.SldDiaStudentEntity;
+import ca.bc.gov.educ.api.sld.model.SldStudentEntity;
+import ca.bc.gov.educ.api.sld.model.SldStudentProgramEntity;
 import ca.bc.gov.educ.api.sld.struct.v1.Event;
-import ca.bc.gov.educ.api.sld.constant.EventOutcome;
-import ca.bc.gov.educ.api.sld.struct.v1.*;
+import ca.bc.gov.educ.api.sld.struct.v1.SldUpdateDiaStudentsEvent;
+import ca.bc.gov.educ.api.sld.struct.v1.SldUpdateStudentProgramsEvent;
+import ca.bc.gov.educ.api.sld.struct.v1.SldUpdateStudentsEvent;
 import ca.bc.gov.educ.api.sld.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.stream.Collectors;
 
-import static lombok.AccessLevel.PRIVATE;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The type Event handler service.
@@ -33,25 +40,16 @@ public class EventHandlerService {
   private static final SldDiaStudentMapper sldDiaStudentMapper = SldDiaStudentMapper.mapper;
   private static final SldStudentProgramMapper sldStudentProgramMapper = SldStudentProgramMapper.mapper;
 
-  @Getter(PRIVATE)
-  private final SldStudentService sldStudentService;
-
-  @Getter(PRIVATE)
-  private final SldDiaStudentService sldDiaStudentService;
-
-  @Getter(PRIVATE)
-  private final SldStudentProgramService sldStudentProgramService;
+  private final Map<EntityName, SldService<?>> sldServiceMap;
 
   /**
    * Instantiates a new Event handler service.
    *
-   * @param sldStudentService      the sld student service
+   * @param sldServices the service classes
    */
   @Autowired
-  public EventHandlerService(final SldStudentService sldStudentService, final SldDiaStudentService sldDiaStudentService, final SldStudentProgramService sldStudentProgramService) {
-    this.sldStudentService = sldStudentService;
-    this.sldDiaStudentService = sldDiaStudentService;
-    this.sldStudentProgramService = sldStudentProgramService;
+  public EventHandlerService(final List<SldService<?>> sldServices) {
+    this.sldServiceMap = sldServices.stream().collect(Collectors.toConcurrentMap(SldService::getEntityName, sldService -> sldService));
   }
 
   /**
@@ -61,14 +59,15 @@ public class EventHandlerService {
    * @return the byte [ ]
    * @throws JsonProcessingException the json processing exception
    */
-  public byte[] handleUpdateStudentsEvent(Event event) throws JsonProcessingException {
+  public byte[] handleUpdateStudentsEvent(final Event event) throws JsonProcessingException {
     log.trace(EVENT_PAYLOAD, event);
-    var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentsEvent.class, event.getEventPayload());
-    var students = getSldStudentService().updateSldStudentsByPen(updateEvent.getPen(), updateEvent.getSldStudent());
+    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentsEvent.class, event.getEventPayload());
+    final SldService<SldStudentEntity> service = (SldService<SldStudentEntity>) this.sldServiceMap.get(EntityName.STUDENT);
+    final var students = service.update(updateEvent.getPen(), sldStudentMapper.toModel(updateEvent.getSldStudent()));
     event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
     event.setEventOutcome(EventOutcome.SLD_STUDENT_UPDATED);
 
-    return createResponseEvent(event);
+    return this.createResponseEvent(event);
   }
 
   /**
@@ -78,14 +77,15 @@ public class EventHandlerService {
    * @return the byte [ ]
    * @throws JsonProcessingException the json processing exception
    */
-  public byte[] handleUpdateDiaStudentsEvent(Event event) throws JsonProcessingException {
+  public byte[] handleUpdateDiaStudentsEvent(final Event event) throws JsonProcessingException {
     log.trace(EVENT_PAYLOAD, event);
-    var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateDiaStudentsEvent.class, event.getEventPayload());
-    var students = getSldDiaStudentService().updateDiaStudentsByPen(updateEvent.getPen(), updateEvent.getSldDiaStudent());
+    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateDiaStudentsEvent.class, event.getEventPayload());
+    final SldService<SldDiaStudentEntity> service = (SldService<SldDiaStudentEntity>) this.sldServiceMap.get(EntityName.DIA_STUDENT);
+    final var students = service.update(updateEvent.getPen(), sldDiaStudentMapper.toModel(updateEvent.getSldDiaStudent()));
     event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldDiaStudentMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
     event.setEventOutcome(EventOutcome.SLD_DIA_STUDENT_UPDATED);
 
-    return createResponseEvent(event);
+    return this.createResponseEvent(event);
   }
 
   /**
@@ -95,22 +95,23 @@ public class EventHandlerService {
    * @return the byte [ ]
    * @throws JsonProcessingException the json processing exception
    */
-  public byte[] handleUpdateStudentProgramsEvent(Event event) throws JsonProcessingException {
+  public byte[] handleUpdateStudentProgramsEvent(final Event event) throws JsonProcessingException {
     log.trace(EVENT_PAYLOAD, event);
-    var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentProgramsEvent.class, event.getEventPayload());
-    var students = getSldStudentProgramService().updateStudentProgramsByPen(updateEvent.getPen(), updateEvent.getSldStudentProgram());
+    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentProgramsEvent.class, event.getEventPayload());
+    final SldService<SldStudentProgramEntity> service = (SldService<SldStudentProgramEntity>) this.sldServiceMap.get(EntityName.STUDENT_PROGRAMS);
+    final var students = service.update(updateEvent.getPen(), sldStudentProgramMapper.toModel(updateEvent.getSldStudentProgram()));
     event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentProgramMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
     event.setEventOutcome(EventOutcome.SLD_STUDENT_PROGRAM_UPDATED);
 
-    return createResponseEvent(event);
+    return this.createResponseEvent(event);
   }
 
-  private byte[] createResponseEvent(Event event) throws JsonProcessingException {
-    Event responseEvent = Event.builder()
-        .sagaId(event.getSagaId())
-        .eventType(event.getEventType())
-        .eventOutcome(event.getEventOutcome())
-        .eventPayload(event.getEventPayload()).build();
+  private byte[] createResponseEvent(final Event event) throws JsonProcessingException {
+    val responseEvent = Event.builder()
+      .sagaId(event.getSagaId())
+      .eventType(event.getEventType())
+      .eventOutcome(event.getEventOutcome())
+      .eventPayload(event.getEventPayload()).build();
     return JsonUtil.getJsonBytesFromObject(responseEvent);
   }
 }

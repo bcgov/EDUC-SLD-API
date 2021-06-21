@@ -26,19 +26,10 @@ public class SldStudentProgramEntity {
   @EmbeddedId
   private SldStudentProgramId sldStudentProgramId;
 
-  @Column(name = "DISTNO")
-  private String distNo;
-
-  @Column(name = "SCHLNO")
-  private String schlNo;
-
-  @Column(name = "ENROLLED_PROGRAM_CODE")
-  private String enrolledProgramCode;
+  @Column(name = "STUDENT_ID", nullable = false)
+  private String studentId;
 
   @Column(name = "CAREER_PROGRAM")
   private String careerProgram;
-
-  @Column(name = "PEN")
-  private String pen;
 
 }

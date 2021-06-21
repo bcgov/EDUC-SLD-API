@@ -1,26 +1,28 @@
 package ca.bc.gov.educ.api.sld.service;
 
+import ca.bc.gov.educ.api.sld.constant.EntityName;
 import ca.bc.gov.educ.api.sld.model.SldDiaStudentEntity;
+import ca.bc.gov.educ.api.sld.model.SldDiaStudentId;
 import ca.bc.gov.educ.api.sld.repository.SldDiaStudentRepository;
-import ca.bc.gov.educ.api.sld.struct.v1.SldDiaStudent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.DSLContext;
+import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.List;
-
-import static ca.bc.gov.educ.api.sld.jooq.Tables.DIA_STUDENT;
 
 /**
  * The type sld dia student service.
  */
 @Service
 @Slf4j
-public class SldDiaStudentService extends SldBaseService {
+public class SldDiaStudentService extends SldBaseService<SldDiaStudentEntity> {
 
   @Getter(AccessLevel.PRIVATE)
   private final SldDiaStudentRepository sldDiaStudentRepository;
@@ -28,40 +30,75 @@ public class SldDiaStudentService extends SldBaseService {
   /**
    * Instantiates a new sld student service.
    *
-   * @param emf the EntityManagerFactory
+   * @param emf                     the EntityManagerFactory
    * @param sldDiaStudentRepository the sld dia student repo
-   * @param create the DSLContext
    */
   @Autowired
-  public SldDiaStudentService(final EntityManagerFactory emf, final SldDiaStudentRepository sldDiaStudentRepository, final DSLContext create) {
-    super(emf, create, DIA_STUDENT, DIA_STUDENT.PEN);
+  public SldDiaStudentService(final EntityManagerFactory emf, final SldDiaStudentRepository sldDiaStudentRepository) {
+    super(emf);
     this.sldDiaStudentRepository = sldDiaStudentRepository;
   }
 
+
+  @Override
+  protected List<SldDiaStudentEntity> findExistingDataByPen(final String pen) {
+    return this.findExistingStudentsByPen(pen);
+  }
+
+  @Override
+  protected String createUpdateStatementForEachRecord(final String updatedPen, final SldDiaStudentEntity sldDiaStudentEntity) {
+    val builder = new StringBuilder();
+    builder
+      .append("UPDATE DIA_STUDENT SET PEN='") // end with beginning single quote
+      .append(updatedPen)
+      .append("'") // end single quote
+      .append(" WHERE ") // starts and ends with a space for valid sql statement
+      .append("PEN='") // end with beginning single quote
+      .append(sldDiaStudentEntity.getSldDiaStudentId().getPen())
+      .append("'") // end single quote
+      .append(" AND DISTNO='")// end with beginning single quote
+      .append(StringUtils.trimToEmpty(sldDiaStudentEntity.getDistNo()))
+      .append("'") // end single quote
+      .append(" AND SCHLNO='")
+      .append(StringUtils.trimToEmpty(sldDiaStudentEntity.getSchlNo()))
+      .append("'") // end single quote
+      .append(" AND REPORT_DATE=") // does not have single quote since it is a numeric field.
+      .append(sldDiaStudentEntity.getSldDiaStudentId().getReportDate())
+      .append(" AND RECORD_NUMBER=") // does not have single quote since it is a numeric field.
+      .append(sldDiaStudentEntity.getRecordNumber());
+    return builder.toString();
+  }
+
+  @Override
+  protected String getKey(final SldDiaStudentEntity sldDiaStudentEntity) {
+    return sldDiaStudentEntity.getSldDiaStudentId().getReportDate() + StringUtils.trimToEmpty(sldDiaStudentEntity.getDistNo()) + StringUtils.trimToEmpty(sldDiaStudentEntity.getSchlNo()) + sldDiaStudentEntity.getRecordNumber();
+  }
+
+  @Override
+  protected String getPen(final SldDiaStudentEntity sldDiaStudentEntity) {
+    return sldDiaStudentEntity.getSldDiaStudentId().getPen();
+  }
+
   /**
-   * Gets DiaStudents by pen.
+   * Find existing students by pen list.
    *
    * @param pen the pen
-   * @return the DiaStudent list
+   * @return the list
    */
-  public List<SldDiaStudentEntity> getDiaStudentByPen(String pen) {
-    return getSldDiaStudentRepository().findAllBySldDiaStudentIdPen(pen);
+
+  protected List<SldDiaStudentEntity> findExistingStudentsByPen(final String pen) {
+    final ExampleMatcher studentMatcher = ExampleMatcher.matchingAny()
+      .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);
+    return this.getSldDiaStudentRepository().findAll(Example.of(SldDiaStudentEntity.builder().sldDiaStudentId(SldDiaStudentId.builder().pen(pen).build()).build(), studentMatcher));
   }
 
-  /**
-   * Update DiaStudents by pen.
-   *
-   * @param pen the PEN
-   * @param sldDiaStudent the Sld DIA Student data
-   * @return the SldDiaStudentEntity list
-   */
-  public List<SldDiaStudentEntity> updateDiaStudentsByPen(String pen, SldDiaStudent sldDiaStudent) {
-    int count = updateSldDataByPen(pen, sldDiaStudent);
-    if(count > 0) {
-      return getSldDiaStudentRepository().findAllBySldDiaStudentIdPen(pen.equals(sldDiaStudent.getPen()) ? pen : sldDiaStudent.getPen());
-    } else {
-      return List.of();
-    }
+  @Override
+  public List<SldDiaStudentEntity> update(final String pen, final SldDiaStudentEntity sldDiaStudentEntity) {
+    return super.update(pen, sldDiaStudentEntity.getSldDiaStudentId().getPen());
   }
 
+  @Override
+  public EntityName getEntityName() {
+    return EntityName.DIA_STUDENT;
+  }
 }
