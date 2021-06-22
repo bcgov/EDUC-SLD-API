@@ -68,7 +68,6 @@ public abstract class SldBaseService<T> implements SldService<T> {
       tx.commit();
     } catch (final Exception e) {
       log.error("Error occurred saving entity " + e.getMessage());
-      tx.rollback();
       throw new SldRuntimeException("Error occurred saving entity", e);
     } finally {
       if (em.isOpen()) {
@@ -157,7 +156,7 @@ public abstract class SldBaseService<T> implements SldService<T> {
           val index = duplicatePenSuffix.indexOf(lastCharacter);
           nextPen = StringUtils.substring(highestPen, 0, 9).concat(duplicatePenSuffix.get(index + 1)); // get the first 9 characters then append the next alphabet for the duplicate entry.
         } else {
-          nextPen = highestPen.concat("D"); // first duplicate, starts with D
+          nextPen = highestPen.trim().concat("D"); // first duplicate, starts with D
         }
         highestPenOptional = Optional.of(nextPen);
       }
@@ -174,10 +173,10 @@ public abstract class SldBaseService<T> implements SldService<T> {
       final String key = this.getKey(el);
       if (penMap.containsKey(key)) {
         val penList = penMap.get(key);
-        penList.add(this.getPen(el));
+        penList.add(StringUtils.trim(this.getPen(el)));
       } else {
         final List<String> penList = new ArrayList<>();
-        penList.add(this.getPen(el));
+        penList.add(StringUtils.trim(this.getPen(el)));
         penMap.put(key, penList);
       }
     });
