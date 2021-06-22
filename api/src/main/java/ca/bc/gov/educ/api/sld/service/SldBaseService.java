@@ -132,6 +132,11 @@ public abstract class SldBaseService<T> implements SldService<T> {
    * * the looped read of STUDENT_OLD continues.
    * *
    * **
+   * <pre>
+   *   The Above old logic is written using Maps to identify duplicate rows,
+   *   child classes implements abstract methods to provide their own behavior.
+   *
+   * </pre>
    *
    * @param mergedFromPenData the merged from pen data
    * @param mergedToPenData   the merged to pen data
@@ -141,29 +146,62 @@ public abstract class SldBaseService<T> implements SldService<T> {
 
   protected List<String> prepareUpdateStatement(final List<T> mergedFromPenData, final List<T> mergedToPenData, final String mergedToPen) {
     final List<String> updateStatements = new ArrayList<>();
-    final Map<String, List<String>> distSchoolReportDatePenMap = this.createMergeToPenMap(mergedToPenData);
+    final Map<String, List<String>> mergeToPenMap = this.createMergeToPenMap(mergedToPenData);
+    final Map<String, List<String>> mergeFromPenMap = this.createMergeToPenMap(mergedFromPenData);
+
     for (val mergedFromPen : mergedFromPenData) {
       val key = this.getKey(mergedFromPen);
       Optional<String> highestPenOptional = Optional.empty();
-      if (distSchoolReportDatePenMap.containsKey(key)) {
-        final List<String> penList = distSchoolReportDatePenMap.get(key).stream()
-          .sorted(Comparator.reverseOrder())
-          .collect(Collectors.toList());
-        final String highestPen = penList.get(0);
-        final String nextPen;
-        if (highestPen.trim().length() == 10) { // if it is 10 characters it already has a duplicate record.
-          val lastCharacter = StringUtils.substring(highestPen, 9, 10);
-          val index = duplicatePenSuffix.indexOf(lastCharacter);
-          nextPen = StringUtils.substring(highestPen, 0, 9).concat(duplicatePenSuffix.get(index + 1)); // get the first 9 characters then append the next alphabet for the duplicate entry.
-        } else {
-          nextPen = highestPen.trim().concat("D"); // first duplicate, starts with D
-        }
-        highestPenOptional = Optional.of(nextPen);
+      if (mergeFromPenMap.containsKey(key) && mergeToPenMap.containsKey(key)) { // if both have same rows find who has the largest and add the 10th char accordingly.
+        final String highestPen = this.getHighestPenFromBothDirection(mergedToPen, mergeToPenMap, mergeFromPenMap, key);
+        highestPenOptional = this.computeNextPen(highestPen);
+      } else if (mergeToPenMap.containsKey(key)) {// if only merge to pen has duplicates then find the largest and add the 10th char accordingly.
+        final String highestPen = this.findHighestPen(mergeToPenMap, key);
+        highestPenOptional = this.computeNextPen(highestPen);
+      } else if (StringUtils.length(this.getPen(mergedFromPen)) == 10) { // check if the merge from PEN is a duplicate one and update the true pen accordingly
+        highestPenOptional = Optional.of(mergedToPen + StringUtils.substring(this.getPen(mergedFromPen), 9, 10));
       }
       final String updatedPen = highestPenOptional.orElse(mergedToPen);
       updateStatements.add(this.createUpdateStatementForEachRecord(updatedPen, mergedFromPen));
     }
     return updateStatements;
+  }
+
+  private String getHighestPenFromBothDirection(final String mergedToPen, final Map<String, List<String>> mergeToPenMap, final Map<String, List<String>> mergeFromPenMap, final String key) {
+    final String highestToPen = this.findHighestPen(mergeToPenMap, key);
+    final String highestFromPen = this.findHighestPen(mergeFromPenMap, key);
+    final String highestPen;
+    if (highestFromPen.trim().length() == 10 && highestToPen.trim().length() == 10) { // compare only the last character
+      highestPen = StringUtils.compare(highestFromPen.substring(9, 10), highestToPen.substring(9, 10)) > 0 ? highestFromPen : highestToPen;
+    } else if (highestFromPen.trim().length() == 10) {
+      highestPen = highestFromPen.trim();
+    } else if (highestToPen.trim().length() == 10) {
+      highestPen = highestToPen.trim();
+    } else {
+      highestPen = mergedToPen;
+    }
+    return highestPen;
+  }
+
+  private Optional<String> computeNextPen(final String highestPen) {
+    final Optional<String> highestPenOptional;
+    final String nextPen;
+    if (highestPen.trim().length() == 10) { // if it is 10 characters it already has a duplicate record.
+      val lastCharacter = StringUtils.substring(highestPen, 9, 10);
+      val index = duplicatePenSuffix.indexOf(lastCharacter);
+      nextPen = StringUtils.substring(highestPen, 0, 9).concat(duplicatePenSuffix.get(index + 1)); // get the first 9 characters then append the next alphabet for the duplicate entry.
+    } else {
+      nextPen = highestPen.trim().concat("D"); // first duplicate, starts with D
+    }
+    highestPenOptional = Optional.of(nextPen);
+    return highestPenOptional;
+  }
+
+  private String findHighestPen(final Map<String, List<String>> penMap, final String key) {
+    final List<String> penList = penMap.get(key).stream()
+      .sorted(Comparator.reverseOrder())
+      .collect(Collectors.toList());
+    return penList.isEmpty() ? "" : penList.get(0);
   }
 
 
