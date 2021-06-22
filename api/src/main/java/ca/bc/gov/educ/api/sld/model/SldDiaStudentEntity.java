@@ -89,9 +89,6 @@ public class SldDiaStudentEntity {
   @Column(name = "BAND_CODE")
   private String bandCode;
 
-  @Column(name = "COMMENT")
-  private String comment;
-
   @Column(name = "PEN_STATUS")
   private String penStatus;
 
