@@ -102,6 +102,28 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     assertThat(students).hasJsonPath("$[0].enrolledGradeCode");
   }
 
+  @Test
+  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENTS2_shouldUpdateSldStudentsAndSendEvent() throws IOException {
+
+    SldTestUtil.createSampleDBData("SldSampleStudentData2.json", new TypeReference<>() {
+    }, this.sldRepository, sldStudentMapper::toModel);
+    final var payload = this.dummyUpdateSldPenJson("111014502", "sldStudent", "110885621");
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
+    val results = this.sldStudentService.findExistingStudentsByPen("110885621").stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
+    assertThat(results).contains("110885621E", "110885621F").size().isEqualTo(8);
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(8);
+    assertThat(students).extractingJsonPathStringValue("$[0].pen").contains("110885621");
+  }
+
   /**
    * Test handle UPDATE_SLD_STUDENTS event.
    */
@@ -150,6 +172,7 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(newPen);
     assertThat(students).hasJsonPath("$[0].diaSchoolInfoWrong");
   }
+
 
   /**
    * Test handle UPDATE_SLD_DIA_STUDENTS event.
