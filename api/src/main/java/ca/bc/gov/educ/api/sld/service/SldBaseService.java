@@ -148,20 +148,23 @@ public abstract class SldBaseService<T> implements SldService<T> {
     final List<String> updateStatements = new ArrayList<>();
     final Map<String, List<String>> mergeToPenMap = this.createMergeToPenMap(mergedToPenData);
     final Map<String, List<String>> mergeFromPenMap = this.createMergeToPenMap(mergedFromPenData);
-
+    final List<String> penNumbersAssigned = new ArrayList<>();
     for (val mergedFromPen : mergedFromPenData) {
       val key = this.getKey(mergedFromPen);
       Optional<String> highestPenOptional = Optional.empty();
       if (mergeFromPenMap.containsKey(key) && mergeToPenMap.containsKey(key)) { // if both have same rows find who has the largest and add the 10th char accordingly.
         final String highestPen = this.getHighestPenFromBothDirection(mergedToPen, mergeToPenMap, mergeFromPenMap, key);
-        highestPenOptional = this.computeNextPen(highestPen);
+        highestPenOptional = this.computeNextPen(highestPen, penNumbersAssigned);
       } else if (mergeToPenMap.containsKey(key)) {// if only merge to pen has duplicates then find the largest and add the 10th char accordingly.
         final String highestPen = this.findHighestPen(mergeToPenMap, key);
-        highestPenOptional = this.computeNextPen(highestPen);
+        highestPenOptional = this.computeNextPen(highestPen, penNumbersAssigned);
       } else if (StringUtils.length(this.getPen(mergedFromPen)) == 10) { // check if the merge from PEN is a duplicate one and update the true pen accordingly
         highestPenOptional = Optional.of(mergedToPen + StringUtils.substring(this.getPen(mergedFromPen), 9, 10));
       }
       final String updatedPen = highestPenOptional.orElse(mergedToPen);
+      if (updatedPen.length() == 10) {
+        penNumbersAssigned.add(updatedPen); // store only if it 10 characters ending with alphabet
+      }
       updateStatements.add(this.createUpdateStatementForEachRecord(updatedPen, mergedFromPen));
     }
     return updateStatements;
@@ -183,15 +186,19 @@ public abstract class SldBaseService<T> implements SldService<T> {
     return highestPen;
   }
 
-  private Optional<String> computeNextPen(final String highestPen) {
+  private Optional<String> computeNextPen(final String highestPen, final List<String> penNumbersAssigned) {
     final Optional<String> highestPenOptional;
     final String nextPen;
     if (highestPen.trim().length() == 10) { // if it is 10 characters it already has a duplicate record.
       val lastCharacter = StringUtils.substring(highestPen, 9, 10);
       val index = duplicatePenSuffix.indexOf(lastCharacter);
       nextPen = StringUtils.substring(highestPen, 0, 9).concat(duplicatePenSuffix.get(index + 1)); // get the first 9 characters then append the next alphabet for the duplicate entry.
+
     } else {
       nextPen = highestPen.trim().concat("D"); // first duplicate, starts with D
+    }
+    if (penNumbersAssigned.contains(nextPen)) { // recursion to check if the current set in memory holds this pen, if so compute the next pen number.
+      return this.computeNextPen(nextPen, penNumbersAssigned);
     }
     highestPenOptional = Optional.of(nextPen);
     return highestPenOptional;
