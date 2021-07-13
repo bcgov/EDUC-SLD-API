@@ -76,7 +76,7 @@ public class SldDiaStudentService extends SldBaseService<SldDiaStudentEntity> {
 
   @Override
   protected String getPen(final SldDiaStudentEntity sldDiaStudentEntity) {
-    return sldDiaStudentEntity.getSldDiaStudentId().getPen();
+    return StringUtils.trim(sldDiaStudentEntity.getSldDiaStudentId().getPen());
   }
 
   /**

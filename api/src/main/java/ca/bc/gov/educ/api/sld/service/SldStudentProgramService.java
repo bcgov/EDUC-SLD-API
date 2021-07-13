@@ -71,7 +71,7 @@ public class SldStudentProgramService extends SldBaseService<SldStudentProgramEn
 
   @Override
   protected String getPen(final SldStudentProgramEntity sldStudentProgramEntity) {
-    return sldStudentProgramEntity.getSldStudentProgramId().getPen();
+    return StringUtils.trim(sldStudentProgramEntity.getSldStudentProgramId().getPen());
   }
 
   /**
