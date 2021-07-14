@@ -118,9 +118,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
     val results = this.sldStudentService.findExistingStudentsByPen("110885621").stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
-    assertThat(results).contains("110885621E", "110885621F").size().isEqualTo(8);
+    assertThat(results).contains("110885621E", "110885621F").size().isEqualTo(9);
     final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
-    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(8);
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(9);
     assertThat(students).extractingJsonPathStringValue("$[0].pen").contains("110885621");
   }
 

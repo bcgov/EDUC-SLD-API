@@ -104,7 +104,7 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
 
   @Override
   protected String getPen(final SldStudentEntity sldStudentEntity) {
-    return sldStudentEntity.getSldStudentId().getPen();
+    return StringUtils.trim(sldStudentEntity.getSldStudentId().getPen());
   }
 
   protected List<SldStudentEntity> findExistingStudentsByPen(final String pen) {
