@@ -1,6 +1,7 @@
 package ca.bc.gov.educ.api.sld.service;
 
 import ca.bc.gov.educ.api.sld.constant.EntityName;
+import ca.bc.gov.educ.api.sld.exception.SldRuntimeException;
 import ca.bc.gov.educ.api.sld.model.SldDiaStudentEntity;
 import ca.bc.gov.educ.api.sld.model.SldDiaStudentId;
 import ca.bc.gov.educ.api.sld.repository.SldDiaStudentRepository;
@@ -67,6 +68,17 @@ public class SldDiaStudentService extends SldBaseService<SldDiaStudentEntity> {
       .append(" AND RECORD_NUMBER=") // does not have single quote since it is a numeric field.
       .append(sldDiaStudentEntity.getRecordNumber());
     return builder.toString();
+  }
+
+  /**
+   * Create restore statement for each pen.
+   *
+   * @param mergedFromPen the merged from pen
+   * @return the string
+   */
+  @Override
+  protected String createRestoreStatementForEachPen(final String mergedFromPen) {
+    throw new SldRuntimeException("Don't support restore operation.");
   }
 
   @Override

@@ -15,5 +15,17 @@ public enum EventOutcome {
   /**
    * SLD Student Program updated event outcome.
    */
-  SLD_STUDENT_PROGRAM_UPDATED
+  SLD_STUDENT_PROGRAM_UPDATED,
+  /**
+   * SLD Student restored event outcome.
+   */
+  SLD_STUDENT_RESTORED,
+  /**
+   * SLD DIA Student restored event outcome.
+   */
+  SLD_DIA_STUDENT_RESTORED,
+  /**
+   * SLD Student Program restored event outcome.
+   */
+  SLD_STUDENT_PROGRAM_RESTORED
 }

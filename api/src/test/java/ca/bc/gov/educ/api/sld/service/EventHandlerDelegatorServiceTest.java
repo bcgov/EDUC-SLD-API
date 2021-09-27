@@ -248,6 +248,104 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(0);
   }
 
+  /**
+   * Test handle RESTORE_SLD_STUDENTS event.
+   */
+  @Test
+  public void testHandleEvent_givenEventTypeRESTORE_SLD_STUDENTS_shouldRestoreSldStudentsAndSendEvent() throws IOException {
+
+    SldTestUtil.createSampleDBData("SldSampleStudentDataForDemerge.json", new TypeReference<>() {
+    }, this.sldRepository, sldStudentMapper::toModel);
+    final var payload = this.dummyUpdateSldPenJson(pen, "sldStudent", newPen);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(RESTORE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENTS);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_RESTORED);
+    val results = this.sldStudentService.findExistingStudentsByPen(pen).stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
+    assertThat(results).contains(pen + "D").size().isEqualTo(4);
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(4);
+    assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(pen);
+    assertThat(students).hasJsonPath("$[0].enrolledGradeCode");
+  }
+
+  /**
+   * Test handle RESTORE_SLD_STUDENTS event.
+   */
+  @Test
+  public void testHandleEvent_givenEventTypeRESTORE_SLD_STUDENTS_and_NonExistentPen_shouldReturnEmptyList() throws IOException {
+
+    SldTestUtil.createSampleDBData("SldSampleStudentDataForDemerge.json", new TypeReference<>() {
+    }, this.sldRepository, sldStudentMapper::toModel);
+    final var payload = this.dummyUpdateSldPenJson(nonExistentPen, "sldStudent", newPen);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(RESTORE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENTS);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_RESTORED);
+
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(0);
+  }
+
+  /**
+   * Test handle RESTORE_SLD_STUDENTS event.
+   */
+  @Test
+  public void testHandleEvent_givenEventTypeRESTORE_SLD_STUDENT_PROGRAMS_shouldRestoreSldStudentsAndSendEvent() throws IOException {
+    SldTestUtil.createSampleDBData("SldStudentProgramSampleDataForDemerge.json", new TypeReference<>() {
+    }, this.sldStudentProgramRepository, sldStudentProgramMapper::toModel);
+    final var payload = this.dummyUpdateSldPenJson(pen, "sldStudentProgram", newPen);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(RESTORE_SLD_STUDENT_PROGRAMS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENT_PROGRAMS);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_RESTORED);
+    val results = this.sldStudentProgramService.findExistingSLDStudentProgramsByPen(pen).stream().map(el -> el.getSldStudentProgramId().getPen()).collect(Collectors.toList());
+
+    assertThat(results).contains(pen + "D").size().isEqualTo(4);
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(4);
+    assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(pen);
+    assertThat(students).hasJsonPath("$[0].enrolledProgramCode");
+  }
+
+  /**
+   * Test handle RESTORE_SLD_STUDENTS event.
+   */
+  @Test
+  public void testHandleEvent_givenEventTypeRESTORE_SLD_STUDENT_PROGRAMS_and_NonExistentPen_shouldReturnEmptyList() throws IOException {
+
+    SldTestUtil.createSampleDBData("SldStudentProgramSampleDataForDemerge.json", new TypeReference<>() {
+    }, this.sldStudentProgramRepository, sldStudentProgramMapper::toModel);
+    final var payload = this.dummyUpdateSldPenJson(nonExistentPen, "sldStudentProgram", newPen);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(RESTORE_SLD_STUDENT_PROGRAMS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENT_PROGRAMS);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_RESTORED);
+
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(0);
+  }
+
   protected String dummyUpdateSldPenJson(final String pen, final String recordName, final String newPen) {
     return " {\n" +
       "    \"pen\": \"" + pen + "\",\n" +

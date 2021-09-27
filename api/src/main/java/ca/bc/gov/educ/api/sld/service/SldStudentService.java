@@ -69,7 +69,17 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
     builder
       .append("UPDATE STUDENT SET PEN='") // end with beginning single quote
       .append(updatedPen)
-      .append("'") // end single quote
+      .append("'"); // end single quote
+
+    //if mergedFromPen has already been merged, set student_id to the recently merged pen value to handle the merge chain issue.
+    if(!mergedFromPen.getStudentId().equals(mergedFromPen.getSldStudentId().getPen())) {
+      builder
+        .append(", STUDENT_ID='") // end with beginning single quote
+        .append(mergedFromPen.getSldStudentId().getPen())
+        .append("'"); // end single quote
+    }
+
+    builder
       .append(" WHERE ") // starts and ends with a space for valid sql statement
       .append("PEN='") // end with beginning single quote
       .append(mergedFromPen.getSldStudentId().getPen())
@@ -85,6 +95,23 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
     return builder.toString();
   }
 
+  /**
+   * Create restore statement for each pen.
+   *
+   * @param mergedFromPen    the mergedFrom pen
+   * @return the string
+   */
+  @Override
+  protected String createRestoreStatementForEachPen(final String mergedFromPen) {
+    val builder = new StringBuilder();
+    builder
+      .append("UPDATE STUDENT SET PEN=STUDENT_ID")
+      .append(" WHERE ") // starts and ends with a space for valid sql statement
+      .append("STUDENT_ID like '") // end with beginning single quote
+      .append(mergedFromPen)
+      .append("%'"); // end single quote
+    return builder.toString();
+  }
 
   /**
    * Gets key.
