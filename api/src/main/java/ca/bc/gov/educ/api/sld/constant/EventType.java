@@ -17,6 +17,18 @@ public enum EventType {
    */
   UPDATE_SLD_STUDENT_PROGRAMS,
   /**
+   * Restore sld students event type.
+   */
+  RESTORE_SLD_STUDENTS,
+  /**
+   * Restore sld dia students event type.
+   */
+  RESTORE_SLD_DIA_STUDENTS,
+  /**
+   * Restore sld student programs event type.
+   */
+  RESTORE_SLD_STUDENT_PROGRAMS,
+  /**
    * SLD event outbox processed event type.
    */
   SLD_EVENT_OUTBOX_PROCESSED

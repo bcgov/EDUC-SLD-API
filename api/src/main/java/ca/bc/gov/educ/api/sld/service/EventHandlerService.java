@@ -71,6 +71,24 @@ public class EventHandlerService {
   }
 
   /**
+   * Handle restore sld students event.
+   *
+   * @param event the event
+   * @return the byte [ ]
+   * @throws JsonProcessingException the json processing exception
+   */
+  public byte[] handleRestoreStudentsEvent(final Event event) throws JsonProcessingException {
+    log.trace(EVENT_PAYLOAD, event);
+    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentsEvent.class, event.getEventPayload());
+    final SldService<SldStudentEntity> service = (SldService<SldStudentEntity>) this.sldServiceMap.get(EntityName.STUDENT);
+    final var students = service.restore(updateEvent.getPen());
+    event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
+    event.setEventOutcome(EventOutcome.SLD_STUDENT_RESTORED);
+
+    return this.createResponseEvent(event);
+  }
+
+  /**
    * Handle update sld dia students event.
    *
    * @param event the event
@@ -102,6 +120,24 @@ public class EventHandlerService {
     final var students = service.update(updateEvent.getPen(), sldStudentProgramMapper.toModel(updateEvent.getSldStudentProgram()));
     event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentProgramMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
     event.setEventOutcome(EventOutcome.SLD_STUDENT_PROGRAM_UPDATED);
+
+    return this.createResponseEvent(event);
+  }
+
+  /**
+   * Handle restore sld student programs event.
+   *
+   * @param event the event
+   * @return the byte [ ]
+   * @throws JsonProcessingException the json processing exception
+   */
+  public byte[] handleRestoreStudentProgramsEvent(final Event event) throws JsonProcessingException {
+    log.trace(EVENT_PAYLOAD, event);
+    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentProgramsEvent.class, event.getEventPayload());
+    final SldService<SldStudentProgramEntity> service = (SldService<SldStudentProgramEntity>) this.sldServiceMap.get(EntityName.STUDENT_PROGRAMS);
+    final var students = service.restore(updateEvent.getPen());
+    event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentProgramMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
+    event.setEventOutcome(EventOutcome.SLD_STUDENT_PROGRAM_RESTORED);
 
     return this.createResponseEvent(event);
   }

@@ -46,6 +46,16 @@ public abstract class SldBaseService<T> implements SldService<T> {
     }
   }
 
+  public List<T> restore(final String pen) {
+    final List<String> updateStatements = this.prepareRestoreStatement(pen);
+    final int count = this.bulkUpdate(updateStatements);
+    if (count > 0) {
+      return this.findExistingDataByPen(pen);
+    } else {
+      return List.of();
+    }
+  }
+
   /**
    * pass all the native update statements and everything will be committed as part of single transaction.
    *
@@ -174,6 +184,10 @@ public abstract class SldBaseService<T> implements SldService<T> {
     return updateStatements;
   }
 
+  protected List<String> prepareRestoreStatement(final String mergedFromPen) {
+    return List.of(this.createRestoreStatementForEachPen(mergedFromPen));
+  }
+
   private String getHighestPenFromBothDirection(final String mergedToPen, final Map<String, List<String>> mergeToPenMap, final Map<String, List<String>> mergeFromPenMap, final String key) {
     val highestToPen = StringUtils.trim(this.findHighestPen(mergeToPenMap, key));
     val highestFromPen = StringUtils.trim(this.findHighestPen(mergeFromPenMap, key));
@@ -234,6 +248,8 @@ public abstract class SldBaseService<T> implements SldService<T> {
   protected abstract String getPen(T t);
 
   protected abstract String createUpdateStatementForEachRecord(String updatedPen, T mergedFromPen);
+
+  protected abstract String createRestoreStatementForEachPen(String mergedFromPen);
 
   protected abstract String getKey(T mergedFromPen);
 
