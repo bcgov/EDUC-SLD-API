@@ -7,7 +7,7 @@ import java.util.List;
 public interface SldService<T> {
   List<T> update(String pen, T t);
 
-  List<T> restore(String pen);
+  List<T> restore(String pen, T t);
 
   EntityName getEntityName();
 }

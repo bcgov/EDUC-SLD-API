@@ -81,7 +81,7 @@ public class EventHandlerService {
     log.trace(EVENT_PAYLOAD, event);
     final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentsEvent.class, event.getEventPayload());
     final SldService<SldStudentEntity> service = (SldService<SldStudentEntity>) this.sldServiceMap.get(EntityName.STUDENT);
-    final var students = service.restore(updateEvent.getPen());
+    final var students = service.restore(updateEvent.getPen(), sldStudentMapper.toModel(updateEvent.getSldStudent()));
     event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
     event.setEventOutcome(EventOutcome.SLD_STUDENT_RESTORED);
 
@@ -135,7 +135,7 @@ public class EventHandlerService {
     log.trace(EVENT_PAYLOAD, event);
     final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentProgramsEvent.class, event.getEventPayload());
     final SldService<SldStudentProgramEntity> service = (SldService<SldStudentProgramEntity>) this.sldServiceMap.get(EntityName.STUDENT_PROGRAMS);
-    final var students = service.restore(updateEvent.getPen());
+    final var students = service.restore(updateEvent.getPen(), sldStudentProgramMapper.toModel(updateEvent.getSldStudentProgram()));
     event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentProgramMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
     event.setEventOutcome(EventOutcome.SLD_STUDENT_PROGRAM_RESTORED);
 

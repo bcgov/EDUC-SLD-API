@@ -102,24 +102,17 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
    * @return the string
    */
   @Override
-  protected String createRestoreStatementForEachPen(final SldStudentEntity mergedFromPen) {
+  protected String createRestoreStatementForEachPen(final String updatedPen, final String mergedFromPen) {
     val builder = new StringBuilder();
     builder
-      .append("UPDATE STUDENT SET PEN='") // end with beginning single quote
-      .append(mergedFromPen.getStudentId())
-      .append("'") // end single quote
+      .append("UPDATE STUDENT SET PEN=STUDENT_ID")
       .append(" WHERE ") // starts and ends with a space for valid sql statement
-      .append("PEN='") // end with beginning single quote
-      .append(mergedFromPen.getSldStudentId().getPen())
-      .append("'") // end single quote
-      .append(" AND DISTNO='")// end with beginning single quote
-      .append(StringUtils.trimToEmpty(mergedFromPen.getSldStudentId().getDistNo()))
-      .append("'") // end single quote
-      .append(" AND SCHLNO='")
-      .append(StringUtils.trimToEmpty(mergedFromPen.getSldStudentId().getSchlNo()))
-      .append("'") // end single quote
-      .append(" AND REPORT_DATE=") // does not have single quote since it is a numeric field.
-      .append(mergedFromPen.getSldStudentId().getReportDate());
+      .append("PEN like '") // end with beginning single quote
+      .append(updatedPen)
+      .append("%'") // end single quote
+      .append(" AND STUDENT_ID like '")// end with beginning single quote
+      .append(mergedFromPen)
+      .append("%'"); // end single quote
     return builder.toString();
   }
 
@@ -156,14 +149,8 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
   }
 
   @Override
-  protected List<SldStudentEntity> findExistingDataByStudentId(final String studentId) {
-    return this.findExistingStudentsByStudentId(studentId);
-  }
-
-  protected List<SldStudentEntity> findExistingStudentsByStudentId(final String studentId) {
-    final ExampleMatcher studentMatcher = ExampleMatcher.matchingAny()
-      .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);
-    return this.getSldRepository().findAll(Example.of(SldStudentEntity.builder().studentId(studentId).build(), studentMatcher));
+  public List<SldStudentEntity> restore(final String pen, final SldStudentEntity sldStudentEntity) {
+    return super.restore(pen, sldStudentEntity.getSldStudentId().getPen());
   }
 
   @Override

@@ -46,9 +46,8 @@ public abstract class SldBaseService<T> implements SldService<T> {
     }
   }
 
-  public List<T> restore(final String pen) {
-    final List<T> mergedFromPenData = this.findExistingDataByStudentId(pen);
-    final List<String> updateStatements = this.prepareRestoreStatement(mergedFromPenData);
+  public List<T> restore(final String pen, final String mergedToPen) {
+    final List<String> updateStatements = this.prepareRestoreStatement(mergedToPen, pen);
     final int count = this.bulkUpdate(updateStatements);
     if (count > 0) {
       return this.findExistingDataByPen(pen);
@@ -185,8 +184,8 @@ public abstract class SldBaseService<T> implements SldService<T> {
     return updateStatements;
   }
 
-  protected List<String> prepareRestoreStatement(final List<T> mergedFromPenData) {
-    return mergedFromPenData.stream().map(this::createRestoreStatementForEachPen).collect(Collectors.toList());
+  protected List<String> prepareRestoreStatement(final String mergedToPen, final String mergedFromPen) {
+    return List.of(this.createRestoreStatementForEachPen(mergedToPen, mergedFromPen));
   }
 
   private String getHighestPenFromBothDirection(final String mergedToPen, final Map<String, List<String>> mergeToPenMap, final Map<String, List<String>> mergeFromPenMap, final String key) {
@@ -250,13 +249,10 @@ public abstract class SldBaseService<T> implements SldService<T> {
 
   protected abstract String createUpdateStatementForEachRecord(String updatedPen, T mergedFromPen);
 
-  protected abstract String createRestoreStatementForEachPen(T mergedFromPen);
+  protected abstract String createRestoreStatementForEachPen(String updatedPen, String mergedFromPen);
 
   protected abstract String getKey(T mergedFromPen);
 
   protected abstract List<T> findExistingDataByPen(String pen);
-
-  protected abstract List<T> findExistingDataByStudentId(String studentId);
-
 
 }
