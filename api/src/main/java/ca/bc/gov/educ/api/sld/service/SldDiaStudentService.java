@@ -77,7 +77,7 @@ public class SldDiaStudentService extends SldBaseService<SldDiaStudentEntity> {
    * @return the string
    */
   @Override
-  protected String createRestoreStatementForEachPen(final SldDiaStudentEntity mergedFromPen) {
+  protected String createRestoreStatementForEachPen(final String updatedPen, final String mergedFromPen) {
     throw new SldRuntimeException("Don't support restore operation.");
   }
 
@@ -110,12 +110,13 @@ public class SldDiaStudentService extends SldBaseService<SldDiaStudentEntity> {
   }
 
   @Override
+  public List<SldDiaStudentEntity> restore(final String pen, final SldDiaStudentEntity sldDiaStudentEntity) {
+    throw new SldRuntimeException("Don't support restore operation.");
+  }
+
+  @Override
   public EntityName getEntityName() {
     return EntityName.DIA_STUDENT;
   }
 
-  @Override
-  protected List<SldDiaStudentEntity> findExistingDataByStudentId(final String studentId) {
-    throw new SldRuntimeException("Don't support StudentId field.");
-  }
 }
