@@ -73,7 +73,7 @@ public class SldStudentService extends SldBaseService<SldStudentId, SldStudentEn
       .append(updatedPen)
       .append("'"); // end single quote
 
-    //if mergedFromPen has already been merged, set student_id to the recently merged pen value to handle the merge chain issue.
+    //if mergedFromPen has already been merged and is not moved back, set student_id to the recently merged pen value to handle the merge chain issue.
     if(!StringUtils.equals(mergedFromPen.getStudentId(), mergedFromPen.getSldStudentId().getPen()) && !isSimilarPen(mergedFromPen.getStudentId(), updatedPen)) {
       builder
         .append(", STUDENT_ID='") // end with beginning single quote
