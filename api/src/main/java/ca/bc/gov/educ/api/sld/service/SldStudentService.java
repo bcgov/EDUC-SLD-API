@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -16,13 +17,14 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The type Sld student service.
  */
 @Service
 @Slf4j
-public class SldStudentService extends SldBaseService<SldStudentEntity> {
+public class SldStudentService extends SldBaseService<SldStudentId, SldStudentEntity> {
 
 
   /**
@@ -72,7 +74,7 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
       .append("'"); // end single quote
 
     //if mergedFromPen has already been merged, set student_id to the recently merged pen value to handle the merge chain issue.
-    if(!StringUtils.equals(mergedFromPen.getStudentId(), mergedFromPen.getSldStudentId().getPen())) {
+    if(!StringUtils.equals(mergedFromPen.getStudentId(), mergedFromPen.getSldStudentId().getPen()) && !isSimilarPen(mergedFromPen.getStudentId(), updatedPen)) {
       builder
         .append(", STUDENT_ID='") // end with beginning single quote
         .append(mergedFromPen.getSldStudentId().getPen())
@@ -133,8 +135,30 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
   }
 
   @Override
+  protected Optional<SldStudentEntity> findExistingDataById(final SldStudentId id) {
+    return this.getSldRepository().findById(id);
+  }
+
+  @Override
+  protected List<SldStudentEntity> findExistingDataByIds(List<SldStudentId> ids) {
+    return this.getSldRepository().findAllById(ids);
+  }
+
+  @Override
+  protected List<SldStudentEntity> findExistingDataByDataMatcher(final SldStudentEntity sldStudentEntity) {
+    return this.findExistingStudentsByDataMatcher(sldStudentEntity);
+  }
+
+  @Override
   protected String getPen(final SldStudentEntity sldStudentEntity) {
     return StringUtils.trim(sldStudentEntity.getSldStudentId().getPen());
+  }
+
+  @Override
+  protected SldStudentId getNewId(final SldStudentEntity sldStudentEntity, final String updatedPen) {
+    final var id = SerializationUtils.clone(sldStudentEntity.getSldStudentId());
+    id.setPen(updatedPen);
+    return id;
   }
 
   protected List<SldStudentEntity> findExistingStudentsByPen(final String pen) {
@@ -143,9 +167,20 @@ public class SldStudentService extends SldBaseService<SldStudentEntity> {
     return this.getSldRepository().findAll(Example.of(SldStudentEntity.builder().sldStudentId(SldStudentId.builder().pen(pen).build()).build(), studentMatcher));
   }
 
+  protected List<SldStudentEntity> findExistingStudentsByDataMatcher(final SldStudentEntity sldStudentEntity) {
+    final ExampleMatcher studentMatcher = ExampleMatcher.matchingAll()
+      .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);
+    return this.getSldRepository().findAll(Example.of(sldStudentEntity, studentMatcher));
+  }
+
   @Override
-  public List<SldStudentEntity> update(final String pen, final SldStudentEntity sldStudentEntity) {
-    return super.update(pen, sldStudentEntity.getSldStudentId().getPen());
+  public Optional<SldStudentEntity> update(final SldStudentId id, final SldStudentEntity sldStudentEntity) {
+    return super.update(id, sldStudentEntity.getSldStudentId().getPen());
+  }
+
+  @Override
+  public List<SldStudentEntity> updateBatch(final SldStudentEntity originalEntity, final SldStudentEntity sldStudentEntity) {
+    return super.updateBatch(originalEntity, sldStudentEntity.getSldStudentId().getPen());
   }
 
   @Override

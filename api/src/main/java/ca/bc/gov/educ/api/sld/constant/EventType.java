@@ -9,6 +9,10 @@ public enum EventType {
    */
   UPDATE_SLD_STUDENTS,
   /**
+   * Update single sld student event type.
+   */
+  UPDATE_SLD_STUDENT,
+  /**
   * Update sld dia students event type.
   */
   UPDATE_SLD_DIA_STUDENTS,

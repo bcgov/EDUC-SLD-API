@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -16,13 +17,14 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * The type sld student program service.
  */
 @Service
 @Slf4j
-public class SldStudentProgramService extends SldBaseService<SldStudentProgramEntity> {
+public class SldStudentProgramService extends SldBaseService<SldStudentProgramId, SldStudentProgramEntity> {
 
   @Getter(AccessLevel.PRIVATE)
   private final SldStudentProgramRepository sldStudentProgramRepository;
@@ -45,6 +47,21 @@ public class SldStudentProgramService extends SldBaseService<SldStudentProgramEn
     return this.findExistingSLDStudentProgramsByPen(pen);
   }
 
+  @Override
+  protected Optional<SldStudentProgramEntity> findExistingDataById(final SldStudentProgramId id) {
+    return this.getSldStudentProgramRepository().findById(id);
+  }
+
+  @Override
+  protected List<SldStudentProgramEntity> findExistingDataByIds(List<SldStudentProgramId> ids) {
+    return this.getSldStudentProgramRepository().findAllById(ids);
+  }
+
+  @Override
+  protected List<SldStudentProgramEntity> findExistingDataByDataMatcher(final SldStudentProgramEntity sldStudentProgramEntity) {
+    return this.findExistingStudentsByDataMatcher(sldStudentProgramEntity);
+  }
+
   /**
    * Find existing students by pen list.
    *
@@ -55,6 +72,12 @@ public class SldStudentProgramService extends SldBaseService<SldStudentProgramEn
     final ExampleMatcher stringMatcher = ExampleMatcher.matchingAny()
       .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);
     return this.getSldStudentProgramRepository().findAll(Example.of(SldStudentProgramEntity.builder().sldStudentProgramId(SldStudentProgramId.builder().pen(pen).build()).build(), stringMatcher));
+  }
+
+  protected List<SldStudentProgramEntity> findExistingStudentsByDataMatcher(final SldStudentProgramEntity sldStudentProgramEntity) {
+    final ExampleMatcher studentMatcher = ExampleMatcher.matchingAll()
+      .withStringMatcher(ExampleMatcher.StringMatcher.STARTING);
+    return this.getSldStudentProgramRepository().findAll(Example.of(sldStudentProgramEntity, studentMatcher));
   }
 
 
@@ -74,6 +97,13 @@ public class SldStudentProgramService extends SldBaseService<SldStudentProgramEn
     return StringUtils.trim(sldStudentProgramEntity.getSldStudentProgramId().getPen());
   }
 
+  @Override
+  protected SldStudentProgramId getNewId(final SldStudentProgramEntity sldStudentProgramEntity, final String updatedPen) {
+    final var id = SerializationUtils.clone(sldStudentProgramEntity.getSldStudentProgramId());
+    id.setPen(updatedPen);
+    return id;
+  }
+
   /**
    * Create update statement for each record string.
    *
@@ -90,7 +120,7 @@ public class SldStudentProgramService extends SldBaseService<SldStudentProgramEn
       .append("'"); // end single quote
 
     //if mergedFromPen has already been merged, set student_id to the recently merged pen value to handle the merge chain issue.
-    if(!StringUtils.equals(mergedFromPen.getStudentId(), mergedFromPen.getSldStudentProgramId().getPen())) {
+    if(!StringUtils.equals(mergedFromPen.getStudentId(), mergedFromPen.getSldStudentProgramId().getPen()) && !isSimilarPen(mergedFromPen.getStudentId(), updatedPen)) {
       builder
         .append(", STUDENT_ID='") // end with beginning single quote
         .append(mergedFromPen.getSldStudentProgramId().getPen())
@@ -138,8 +168,13 @@ public class SldStudentProgramService extends SldBaseService<SldStudentProgramEn
   }
 
   @Override
-  public List<SldStudentProgramEntity> update(final String pen, final SldStudentProgramEntity sldStudentProgramEntity) {
-    return super.update(pen, sldStudentProgramEntity.getSldStudentProgramId().getPen());
+  public Optional<SldStudentProgramEntity> update(final SldStudentProgramId id, final SldStudentProgramEntity sldStudentProgramEntity) {
+    return super.update(id, sldStudentProgramEntity.getSldStudentProgramId().getPen());
+  }
+
+  @Override
+  public List<SldStudentProgramEntity> updateBatch(final SldStudentProgramEntity originalEntity, final SldStudentProgramEntity sldStudentProgramEntity) {
+    return super.updateBatch(originalEntity, sldStudentProgramEntity.getSldStudentProgramId().getPen());
   }
 
   @Override

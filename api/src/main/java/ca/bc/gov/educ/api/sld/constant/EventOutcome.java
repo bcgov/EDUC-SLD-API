@@ -9,6 +9,10 @@ public enum EventOutcome {
    */
   SLD_STUDENT_UPDATED,
   /**
+   * SLD Student not found event outcome.
+   */
+  SLD_STUDENT_NOT_FOUND,
+  /**
    * SLD DIA Student updated event outcome.
    */
   SLD_DIA_STUDENT_UPDATED,

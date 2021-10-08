@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.sld.exception.SldRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.persistence.EntityManagerFactory;
 import java.util.*;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
  * The type sld base service.
  */
 @Slf4j
-public abstract class SldBaseService<T> implements SldService<T> {
+public abstract class SldBaseService<S, T> implements SldService<S, T> {
   /**
    * The Duplicate pen suffix.
    */
@@ -34,16 +35,29 @@ public abstract class SldBaseService<T> implements SldService<T> {
     this.emf = emf;
   }
 
-  protected List<T> update(final String pen, final String mergedToPen) {
-    final List<T> mergedFromPenData = this.findExistingDataByPen(pen);
+  protected List<T> updateBatch(final T mergedFromData, final String mergedToPen) {
+    final List<T> mergedFromPenData = this.findExistingDataByDataMatcher(mergedFromData);
     final List<T> mergedToPenData = this.findExistingDataByPen(mergedToPen);
-    final List<String> updateStatements = this.prepareUpdateStatement(mergedFromPenData, mergedToPenData, mergedToPen);
-    final int count = this.bulkUpdate(updateStatements);
+    final var updateStatements = this.prepareUpdateStatement(mergedFromPenData, mergedToPenData, mergedToPen);
+    final int count = this.bulkUpdate(updateStatements.getLeft());
     if (count > 0) {
-      return this.findExistingDataByPen(pen.equals(mergedToPen) ? pen : mergedToPen);
+      return this.findExistingDataByIds(updateStatements.getRight());
     } else {
       return List.of();
     }
+  }
+
+  protected Optional<T> update(final S mergedFromId, final String mergedToPen) {
+    return this.findExistingDataById(mergedFromId).flatMap((mergedFromPenData) -> {
+      final List<T> mergedToPenData = this.findExistingDataByPen(mergedToPen);
+      final var updateStatements = this.prepareUpdateStatement(List.of(mergedFromPenData), mergedToPenData, mergedToPen);
+      final int count = this.bulkUpdate(updateStatements.getLeft());
+      if (count > 0) {
+        return this.findExistingDataById(updateStatements.getRight().get(0));
+      } else {
+        return Optional.empty();
+      }
+    });
   }
 
   public List<T> restore(final String pen, final String mergedToPen) {
@@ -151,11 +165,12 @@ public abstract class SldBaseService<T> implements SldService<T> {
    * @param mergedFromPenData the merged from pen data
    * @param mergedToPenData   the merged to pen data
    * @param mergedToPen       the merged to pen
-   * @return the list
+   * @return the pair of lists, left list is update statements, right list is new ids
    */
 
-  protected List<String> prepareUpdateStatement(final List<T> mergedFromPenData, final List<T> mergedToPenData, final String mergedToPen) {
+  protected Pair<List<String>,List<S>>  prepareUpdateStatement(final List<T> mergedFromPenData, final List<T> mergedToPenData, final String mergedToPen) {
     final List<String> updateStatements = new ArrayList<>();
+    final List<S> newIds = new ArrayList<>();
     final Map<String, List<String>> mergeToPenMap = this.createMergeToPenMap(mergedToPenData);
     final Map<String, List<String>> mergeFromPenMap = this.createMergeToPenMap(mergedFromPenData);
     for (val mergedFromPen : mergedFromPenData) {
@@ -180,12 +195,19 @@ public abstract class SldBaseService<T> implements SldService<T> {
       }
       final String updatedPen = highestPenOptional.orElse(mergedToPen);
       updateStatements.add(this.createUpdateStatementForEachRecord(updatedPen, mergedFromPen));
+      newIds.add(this.getNewId(mergedFromPen, updatedPen));
     }
-    return updateStatements;
+    return Pair.of(updateStatements, newIds);
   }
 
   protected List<String> prepareRestoreStatement(final String mergedToPen, final String mergedFromPen) {
     return List.of(this.createRestoreStatementForEachPen(mergedToPen, mergedFromPen));
+  }
+
+  protected boolean isSimilarPen(final String penA, final String penB) {
+    final var realPenA = StringUtils.length(penA) >= 10 ? StringUtils.substring(penA, 0, 9) : penA;
+    final var realPenB = StringUtils.length(penB) >= 10 ? StringUtils.substring(penB, 0, 9) : penB;
+    return StringUtils.equals(realPenA, realPenB);
   }
 
   private String getHighestPenFromBothDirection(final String mergedToPen, final Map<String, List<String>> mergeToPenMap, final Map<String, List<String>> mergeFromPenMap, final String key) {
@@ -247,6 +269,8 @@ public abstract class SldBaseService<T> implements SldService<T> {
   // below methods are child specific implementation.
   protected abstract String getPen(T t);
 
+  protected abstract S getNewId(T t, String updatedPen);
+
   protected abstract String createUpdateStatementForEachRecord(String updatedPen, T mergedFromPen);
 
   protected abstract String createRestoreStatementForEachPen(String updatedPen, String mergedFromPen);
@@ -255,4 +279,9 @@ public abstract class SldBaseService<T> implements SldService<T> {
 
   protected abstract List<T> findExistingDataByPen(String pen);
 
+  protected abstract Optional<T> findExistingDataById(S id);
+
+  protected abstract List<T> findExistingDataByIds(List<S> ids);
+
+  protected abstract List<T> findExistingDataByDataMatcher(T data);
 }
