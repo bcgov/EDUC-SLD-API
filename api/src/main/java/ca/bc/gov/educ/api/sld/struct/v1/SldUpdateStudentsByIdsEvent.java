@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * The type sld update single student event.
  */
@@ -14,23 +16,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SldUpdateSingleStudentEvent {
+public class SldUpdateStudentsByIdsEvent {
   /**
-   * the PEN which is used to search the sld students.
+   * the ids which are used to search the sld students.
    */
-  private String pen;
-  /**
-   * the distNo which is used to search the sld students.
-   */
-  private String distNo;
-  /**
-   * the schlNo which is used to search the sld students.
-   */
-  private String schlNo;
-  /**
-   * the reportDate which is used to search the sld students.
-   */
-  private Long reportDate;
+  private List<SldStudentId> ids;
   /**
    * the attributes of sld record to be updated.
    * Leave the attribute null if no update.

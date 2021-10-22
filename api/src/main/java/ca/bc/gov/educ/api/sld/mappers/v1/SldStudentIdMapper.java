@@ -1,7 +1,6 @@
 package ca.bc.gov.educ.api.sld.mappers.v1;
 
 import ca.bc.gov.educ.api.sld.model.SldStudentId;
-import ca.bc.gov.educ.api.sld.struct.v1.SldUpdateSingleStudentEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
@@ -10,17 +9,17 @@ import org.mapstruct.factory.Mappers;
  */
 @Mapper(uses = StringMapper.class)
 @SuppressWarnings("squid:S1214")
-public interface SldUpdateSingleStudentEventMapper {
+public interface SldStudentIdMapper {
   /**
    * The constant mapper.
    */
-  SldUpdateSingleStudentEventMapper mapper = Mappers.getMapper(SldUpdateSingleStudentEventMapper.class);
+  SldStudentIdMapper mapper = Mappers.getMapper(SldStudentIdMapper.class);
 
   /**
    * To structure sld student id.
    *
-   * @param sldUpdateSingleStudentEvent the struct which will be converted.
+   * @param sldStudentId the struct which will be converted.
    * @return the converted struct.
    */
-  SldStudentId toSldStudentId(SldUpdateSingleStudentEvent sldUpdateSingleStudentEvent);
+  SldStudentId toStruct(ca.bc.gov.educ.api.sld.struct.v1.SldStudentId sldStudentId);
 }

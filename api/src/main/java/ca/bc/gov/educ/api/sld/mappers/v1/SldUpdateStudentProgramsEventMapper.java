@@ -1,9 +1,7 @@
 package ca.bc.gov.educ.api.sld.mappers.v1;
 
-import ca.bc.gov.educ.api.sld.model.SldStudentEntity;
 import ca.bc.gov.educ.api.sld.model.SldStudentProgramEntity;
 import ca.bc.gov.educ.api.sld.struct.v1.SldUpdateStudentProgramsEvent;
-import ca.bc.gov.educ.api.sld.struct.v1.SldUpdateStudentsEvent;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -26,8 +24,5 @@ public interface SldUpdateStudentProgramsEventMapper {
    * @return the converted struct.
    */
   @Mapping(source = "pen", target = "sldStudentProgramId.pen")
-  @Mapping(source = "distNo", target = "sldStudentProgramId.distNo")
-  @Mapping(source = "schlNo", target = "sldStudentProgramId.schlNo")
-  @Mapping(source = "reportDate", target = "sldStudentProgramId.reportDate")
   SldStudentProgramEntity toSldStudentProgramEntity(SldUpdateStudentProgramsEvent sldUpdateStudentProgramsEvent);
 }

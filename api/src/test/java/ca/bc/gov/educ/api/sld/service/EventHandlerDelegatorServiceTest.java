@@ -189,9 +189,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
 
     val results = this.sldStudentProgramService.findExistingSLDStudentProgramsByPen(newPen).stream().map(el -> el.getSldStudentProgramId().getPen()).collect(Collectors.toList());
 
-    assertThat(results).contains(newPen + "D").size().isEqualTo(6);
+    assertThat(results).contains(newPen + "D").size().isEqualTo(7);
     final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
-    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(2);
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(3);
     assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(newPen);
     assertThat(students).hasJsonPath("$[0].enrolledProgramCode");
   }
@@ -318,50 +318,132 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   }
 
   /**
-   * Test handle UPDATE_SLD_STUDENT event.
+   * Test handle UPDATE_SLD_STUDENTS_BY_IDS event.
    */
   @Test
-  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENT_shouldUpdateSingleSldStudentAndSendEvent() throws IOException {
+  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENTS_BY_IDS_shouldUpdateSldStudentsAndSendEvent() throws IOException {
 
     SldTestUtil.createSampleDBData("SldSampleStudentData.json", new TypeReference<>() {
     }, this.sldRepository, sldStudentMapper::toModel);
-    final var payload = this.dummyUpdateSldPenJson(pen, "069", "69015", 20040930, null, "sldStudent", newPen);
+    final var payload = this.dummyUpdateSldPensJson(pen, null, null, "ids", "sldStudent", newPen);
     final var topic = "api-topic";
-    final var event = Event.builder().eventType(UPDATE_SLD_STUDENT).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+    final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS_BY_IDS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
     verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
 
     final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
-    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT);
+    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS_BY_IDS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
     val results = this.sldStudentService.findExistingStudentsByPen(newPen).stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
-    assertThat(results).contains(newPen + "D", newPen + "E").size().isEqualTo(5);
+    assertThat(results).contains(newPen + "D", newPen + "E").size().isEqualTo(6);
     final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
-    assertThat(students).extractingJsonPathStringValue("$.pen").contains(newPen);
-    assertThat(students).hasJsonPath("$.enrolledGradeCode");
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(2);
+    assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(newPen);
   }
 
   /**
    * Test handle UPDATE_SLD_STUDENT event.
    */
   @Test
-  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENT_and_NonExistentPen_shouldReturnSLD_STUDENT_NOT_FOUND() throws IOException {
+  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENTS_BY_IDS_and_NonExistentPen_shouldReturnSLD_STUDENT_NOT_FOUND() throws IOException {
 
     SldTestUtil.createSampleDBData("SldSampleStudentData.json", new TypeReference<>() {
     }, this.sldRepository, sldStudentMapper::toModel);
-    final var payload = this.dummyUpdateSldPenJson(nonExistentPen, "069", "69015", 20040930, null, "sldStudent", newPen);
+    final var payload = this.dummyUpdateSldPensJson(nonExistentPen, null, null, "ids","sldStudent", newPen);
     final var topic = "api-topic";
-    final var event = Event.builder().eventType(UPDATE_SLD_STUDENT).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+    final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS_BY_IDS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
     verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
 
     final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
-    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT);
-    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_NOT_FOUND);
+    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS_BY_IDS);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
+
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(0);
 
   }
+
+  /**
+   * Test handle UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA event.
+   */
+  @Test
+  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENT_PROGRAMS_BY_DATA_shouldUpdateSomeSldStudentProgramsAndSendEvent() throws IOException {
+
+    SldTestUtil.createSampleDBData("SldStudentProgramSampleData.json", new TypeReference<>() {
+    }, this.sldStudentProgramRepository, sldStudentProgramMapper::toModel);
+    final var payload = this.dummyUpdateSldPensJson(pen,"120164447", "120164447","examples", "sldStudentProgram", newPen);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
+
+    val results = this.sldStudentProgramService.findExistingSLDStudentProgramsByPen(newPen).stream().map(el -> el.getSldStudentProgramId().getPen()).collect(Collectors.toList());
+
+    assertThat(results).contains(newPen + "D").size().isEqualTo(5);
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(1);
+    assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(newPen);
+    assertThat(students).hasJsonPath("$[0].enrolledProgramCode");
+  }
+
+  /**
+   * Test handle UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA event.
+   */
+  @Test
+  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENT_PROGRAMS_BY_DATA_with_multi_studentId_shouldUpdateSomeSldStudentProgramsAndSendEvent() throws IOException {
+
+    SldTestUtil.createSampleDBData("SldStudentProgramSampleData.json", new TypeReference<>() {
+    }, this.sldStudentProgramRepository, sldStudentProgramMapper::toModel);
+    final var payload = this.dummyUpdateSldPensJson(pen,"120164446", "120164447","examples", "sldStudentProgram", newPen);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
+
+    val results = this.sldStudentProgramService.findExistingSLDStudentProgramsByPen(newPen).stream().map(el -> el.getSldStudentProgramId().getPen()).collect(Collectors.toList());
+    assertThat(results).contains(newPen + "D").size().isEqualTo(6);
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(2);
+    assertThat(students).extractingJsonPathStringValue("$[0].pen").contains(newPen);
+    assertThat(students).hasJsonPath("$[0].enrolledProgramCode");
+  }
+
+  /**
+   * Test handle UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA event.
+   */
+  @Test
+  public void testHandleEvent_givenEventTypeUPDATE_SLD_STUDENT_PROGRAMS_BY_DATA_and_NonExistentPen_shouldReturnEmptyList() throws IOException {
+
+    SldTestUtil.createSampleDBData("SldStudentProgramSampleData.json", new TypeReference<>() {
+    }, this.sldStudentProgramRepository, sldStudentProgramMapper::toModel);
+    final var payload = this.dummyUpdateSldPensJson(nonExistentPen,"120164447", "120164447", "examples", "sldStudentProgram", newPen);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
+
+    final var students = jsonTester.from(replyEvent.getEventPayload().getBytes());
+    assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(0);
+  }
+
 
   protected String dummyUpdateSldPenJson(final String pen, final String recordName, final String newPen) {
     return " {\n" +
@@ -379,6 +461,27 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
       "    \"schlNo\": \"" + StringUtils.defaultString(schlNo, "NULL") + "\",\n" +
       "    \"reportDate\": \"" + reportDate + "\",\n" +
       "    \"studentId\": \"" + 	StringUtils.defaultString(studentId, "NULL") + "\",\n" +
+      "    \"" + recordName + "\": {\n" +
+      "    \"pen\": \"" + newPen + "\"\n" +
+      "    }\n" +
+      "  }";
+  }
+
+  protected String dummyUpdateSldPensJson(final String pen, final String studentId1, final String studentId2, final String keyName, final String recordName, final String newPen) {
+    return " {\n" +
+      "    \"" + keyName + "\": [{\n" +
+      "      \"pen\": \"" + pen + "\",\n" +
+      "      \"distNo\": \"069\",\n" +
+      "      \"schlNo\": \"69015\",\n" +
+      "      \"reportDate\": 20040201,\n" +
+      "      \"studentId\": \"" + 	StringUtils.defaultString(studentId1, "NULL") + "\"\n" +
+      "      },{\n" +
+      "      \"pen\": \"" + pen + "\",\n" +
+      "      \"distNo\": \"069\",\n" +
+      "      \"schlNo\": \"69015\",\n" +
+      "      \"reportDate\": 20040930,\n" +
+      "      \"studentId\": \"" + 	StringUtils.defaultString(studentId2, "NULL") + "\"\n" +
+      "      }],\n" +
       "    \"" + recordName + "\": {\n" +
       "    \"pen\": \"" + newPen + "\"\n" +
       "    }\n" +

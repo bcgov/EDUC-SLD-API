@@ -33,7 +33,7 @@ public interface SldStudentProgramMapper {
   SldStudentProgram toStructure(SldStudentProgramEntity sldStudentProgramEntity);
 
   /**
-   * the toModel is only used in unit testing.
+   * the toModel.
    *
    * @param sldStudentProgram the struct which will be converted to entity.
    * @return the converted entity.

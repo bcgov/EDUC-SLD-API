@@ -7,22 +7,16 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * The type sld update dia student programs event.
+ * The type Sld Student Id.
  */
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SldUpdateStudentProgramsEvent {
-  /**
-   * the PEN which is used to search the sld student programs.
-   */
+public class SldStudentId {
+  private String distNo;
+  private String schlNo;
   private String pen;
-
-  /**
-   * the attributes of sld record to be updated.
-   * Leave the attribute null if no update.
-   */
-  private SldStudentProgram sldStudentProgram;
+  private Long reportDate;
 }
