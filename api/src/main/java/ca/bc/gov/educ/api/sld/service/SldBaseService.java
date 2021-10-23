@@ -35,8 +35,7 @@ public abstract class SldBaseService<S, T> implements SldService<S, T> {
     this.emf = emf;
   }
 
-  protected List<T> updateBatch(final T mergedFromData, final String mergedToPen) {
-    final List<T> mergedFromPenData = this.findExistingDataByDataMatcher(mergedFromData);
+  protected List<T> updateBatch(final List<T> mergedFromPenData, final String mergedToPen) {
     final List<T> mergedToPenData = this.findExistingDataByPen(mergedToPen);
     final var updateStatements = this.prepareUpdateStatement(mergedFromPenData, mergedToPenData, mergedToPen);
     final int count = this.bulkUpdate(updateStatements.getLeft());
@@ -45,6 +44,21 @@ public abstract class SldBaseService<S, T> implements SldService<S, T> {
     } else {
       return List.of();
     }
+  }
+
+  protected List<T> updateBatchByExample(final T mergedFromData, final String mergedToPen) {
+    final List<T> mergedFromPenData = this.findExistingDataByDataMatcher(mergedFromData);
+    return this.updateBatch(mergedFromPenData, mergedToPen);
+  }
+
+  protected List<T> updateBatchByIds(final List<S> mergedFromIds, final String mergedToPen) {
+    final List<T> mergedFromPenData = this.findExistingDataByIds(mergedFromIds);
+    return this.updateBatch(mergedFromPenData, mergedToPen);
+  }
+
+  protected List<T> updateBatchByExamples(final List<T> mergedFromData, final String mergedToPen) {
+    final List<T> mergedFromPenData = mergedFromData.stream().flatMap(data -> this.findExistingDataByDataMatcher(data).stream()).collect(Collectors.toList());
+    return this.updateBatch(mergedFromPenData, mergedToPen);
   }
 
   protected Optional<T> update(final S mergedFromId, final String mergedToPen) {

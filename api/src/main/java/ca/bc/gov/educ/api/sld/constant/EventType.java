@@ -9,9 +9,9 @@ public enum EventType {
    */
   UPDATE_SLD_STUDENTS,
   /**
-   * Update single sld student event type.
+   * Update sld students by ids event type.
    */
-  UPDATE_SLD_STUDENT,
+  UPDATE_SLD_STUDENTS_BY_IDS,
   /**
   * Update sld dia students event type.
   */
@@ -20,6 +20,10 @@ public enum EventType {
    * Update sld student programs event type.
    */
   UPDATE_SLD_STUDENT_PROGRAMS,
+  /**
+   * Update sld student programs by data event type.
+   */
+  UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA,
   /**
    * Restore sld students event type.
    */

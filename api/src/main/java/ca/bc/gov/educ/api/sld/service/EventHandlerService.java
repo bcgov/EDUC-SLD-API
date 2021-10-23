@@ -4,6 +4,7 @@ import ca.bc.gov.educ.api.sld.constant.EntityName;
 import ca.bc.gov.educ.api.sld.constant.EventOutcome;
 import ca.bc.gov.educ.api.sld.mappers.v1.*;
 import ca.bc.gov.educ.api.sld.model.*;
+import ca.bc.gov.educ.api.sld.model.SldStudentId;
 import ca.bc.gov.educ.api.sld.struct.v1.*;
 import ca.bc.gov.educ.api.sld.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,7 +33,7 @@ public class EventHandlerService {
   private static final SldStudentMapper sldStudentMapper = SldStudentMapper.mapper;
   private static final SldStudentProgramMapper sldStudentProgramMapper = SldStudentProgramMapper.mapper;
   private static final SldUpdateStudentsEventMapper sldUpdateStudentsEventMapper = SldUpdateStudentsEventMapper.mapper;
-  private static final SldUpdateSingleStudentEventMapper sldUpdateSingleStudentEventMapper = SldUpdateSingleStudentEventMapper.mapper;
+  private static final SldStudentIdMapper sldStudentIdMapper = SldStudentIdMapper.mapper;
   private static final SldUpdateStudentProgramsEventMapper sldUpdateStudentProgramsEventMapper = SldUpdateStudentProgramsEventMapper.mapper;
 
   private final Map<EntityName, SldService<?, ?>> sldServiceMap;
@@ -66,23 +67,20 @@ public class EventHandlerService {
   }
 
   /**
-   * Handle update single sld student event.
+   * Handle update sld students by ids event.
    *
    * @param event the event
    * @return the byte [ ]
    * @throws JsonProcessingException the json processing exception
    */
-  public byte[] handleUpdateStudentEvent(final Event event) throws JsonProcessingException {
+  public byte[] handleUpdateStudentsByIdsEvent(final Event event) throws JsonProcessingException {
     log.trace(EVENT_PAYLOAD, event);
-    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateSingleStudentEvent.class, event.getEventPayload());
+    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentsByIdsEvent.class, event.getEventPayload());
     final SldService<SldStudentId, SldStudentEntity> service = (SldService<SldStudentId, SldStudentEntity>) this.sldServiceMap.get(EntityName.STUDENT);
-    final var student = service.update(sldUpdateSingleStudentEventMapper.toSldStudentId(updateEvent), sldStudentMapper.toModel(updateEvent.getSldStudent()));
-    if(student.isPresent()) {
-      event.setEventPayload(JsonUtil.getJsonStringFromObject(sldStudentMapper.toStructure(student.get())));// need to convert to structure MANDATORY otherwise jackson will break.
-      event.setEventOutcome(EventOutcome.SLD_STUDENT_UPDATED);
-    } else {
-      event.setEventOutcome(EventOutcome.SLD_STUDENT_NOT_FOUND);
-    }
+    final var ids = updateEvent.getIds().stream().map(sldStudentIdMapper::toStruct).collect(Collectors.toList());
+    final var students = service.updateBatchByIds(ids, sldStudentMapper.toModel(updateEvent.getSldStudent()));
+    event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
+    event.setEventOutcome(EventOutcome.SLD_STUDENT_UPDATED);
 
     return this.createResponseEvent(event);
   }
@@ -117,6 +115,25 @@ public class EventHandlerService {
     final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentProgramsEvent.class, event.getEventPayload());
     final SldService<SldStudentProgramId, SldStudentProgramEntity> service = (SldService<SldStudentProgramId, SldStudentProgramEntity>) this.sldServiceMap.get(EntityName.STUDENT_PROGRAMS);
     final var students = service.updateBatch(sldUpdateStudentProgramsEventMapper.toSldStudentProgramEntity(updateEvent), sldStudentProgramMapper.toModel(updateEvent.getSldStudentProgram()));
+    event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentProgramMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
+    event.setEventOutcome(EventOutcome.SLD_STUDENT_PROGRAM_UPDATED);
+
+    return this.createResponseEvent(event);
+  }
+
+  /**
+   * Handle update sld student programs by data event.
+   *
+   * @param event the event
+   * @return the byte [ ]
+   * @throws JsonProcessingException the json processing exception
+   */
+  public byte[] handleUpdateStudentProgramsByDataEvent(final Event event) throws JsonProcessingException {
+    log.trace(EVENT_PAYLOAD, event);
+    final var updateEvent = JsonUtil.getJsonObjectFromString(SldUpdateStudentProgramsByDataEvent.class, event.getEventPayload());
+    final SldService<SldStudentProgramId, SldStudentProgramEntity> service = (SldService<SldStudentProgramId, SldStudentProgramEntity>) this.sldServiceMap.get(EntityName.STUDENT_PROGRAMS);
+    final var examples = updateEvent.getExamples().stream().map(sldStudentProgramMapper::toModel).collect(Collectors.toList());
+    final var students = service.updateBatchByExamples(examples, sldStudentProgramMapper.toModel(updateEvent.getSldStudentProgram()));
     event.setEventPayload(JsonUtil.getJsonStringFromObject(students.stream().map(sldStudentProgramMapper::toStructure).collect(Collectors.toList())));// need to convert to structure MANDATORY otherwise jackson will break.
     event.setEventOutcome(EventOutcome.SLD_STUDENT_PROGRAM_UPDATED);
 

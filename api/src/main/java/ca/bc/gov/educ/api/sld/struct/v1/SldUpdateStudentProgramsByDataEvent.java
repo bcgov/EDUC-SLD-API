@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * The type sld update dia student programs event.
  */
@@ -14,11 +16,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SldUpdateStudentProgramsEvent {
+public class SldUpdateStudentProgramsByDataEvent {
   /**
-   * the PEN which is used to search the sld student programs.
+   * the examples which are used to search the sld student programs.
    */
-  private String pen;
+  private List<SldStudentProgram> examples;
 
   /**
    * the attributes of sld record to be updated.

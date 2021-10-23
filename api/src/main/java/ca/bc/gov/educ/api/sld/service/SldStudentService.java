@@ -180,7 +180,17 @@ public class SldStudentService extends SldBaseService<SldStudentId, SldStudentEn
 
   @Override
   public List<SldStudentEntity> updateBatch(final SldStudentEntity originalEntity, final SldStudentEntity sldStudentEntity) {
-    return super.updateBatch(originalEntity, sldStudentEntity.getSldStudentId().getPen());
+    return super.updateBatchByExample(originalEntity, sldStudentEntity.getSldStudentId().getPen());
+  }
+
+  @Override
+  public List<SldStudentEntity> updateBatchByIds(final List<SldStudentId> ids, final SldStudentEntity sldStudentEntity) {
+    return super.updateBatchByIds(ids, sldStudentEntity.getSldStudentId().getPen());
+  }
+
+  @Override
+  public List<SldStudentEntity> updateBatchByExamples(final List<SldStudentEntity> examples, final SldStudentEntity sldStudentEntity) {
+    return super.updateBatchByExamples(examples, sldStudentEntity.getSldStudentId().getPen());
   }
 
   @Override

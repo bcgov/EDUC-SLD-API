@@ -57,10 +57,10 @@ public class EventHandlerDelegatorService {
           log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
           publishToNATS(event, message, isSynchronous, response);
           break;
-        case UPDATE_SLD_STUDENT:
-          log.info("received update sld student event :: {}", event.getSagaId());
+        case UPDATE_SLD_STUDENTS_BY_IDS:
+          log.info("received update sld students by ids event :: {}", event.getSagaId());
           log.trace(PAYLOAD_LOG, event.getEventPayload());
-          response = eventHandlerService.handleUpdateStudentEvent(event);
+          response = eventHandlerService.handleUpdateStudentsByIdsEvent(event);
           log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
           publishToNATS(event, message, isSynchronous, response);
           break;
@@ -75,6 +75,13 @@ public class EventHandlerDelegatorService {
           log.info("received update sld student programs event :: {}", event.getSagaId());
           log.trace(PAYLOAD_LOG, event.getEventPayload());
           response = eventHandlerService.handleUpdateStudentProgramsEvent(event);
+          log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
+          publishToNATS(event, message, isSynchronous, response);
+          break;
+        case UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA:
+          log.info("received update sld student programs by data event :: {}", event.getSagaId());
+          log.trace(PAYLOAD_LOG, event.getEventPayload());
+          response = eventHandlerService.handleUpdateStudentProgramsByDataEvent(event);
           log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
           publishToNATS(event, message, isSynchronous, response);
           break;
