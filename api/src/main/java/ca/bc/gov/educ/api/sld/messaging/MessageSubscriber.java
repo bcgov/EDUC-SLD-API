@@ -14,7 +14,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static ca.bc.gov.educ.api.sld.constant.Topics.SLD_API_TOPIC;
 
@@ -24,7 +27,7 @@ import static ca.bc.gov.educ.api.sld.constant.Topics.SLD_API_TOPIC;
 @Component
 @Slf4j
 public class MessageSubscriber {
-  private final Executor messageProcessingThreads;
+  private final ExecutorService messageProcessingThreads;
   private final EventHandlerDelegatorService eventHandlerDelegatorServiceV1;
   private final Connection connection;
 
@@ -69,7 +72,13 @@ public class MessageSubscriber {
           }
           //place holder to have different versions
           if ("V1".equalsIgnoreCase(event.getPayloadVersion())) {
-            messageProcessingThreads.execute(() -> eventHandlerDelegatorServiceV1.handleEvent(event, message));
+            final var future = this.messageProcessingThreads.submit(() -> this.eventHandlerDelegatorServiceV1.handleEvent(event, message));
+            try{
+              future.get(30, TimeUnit.SECONDS);
+            }catch (final TimeoutException | ExecutionException | InterruptedException e){
+              log.error("Exception ", e);
+              future.cancel(true);
+            }
           }
         } catch (final Exception e) {
           log.error("Exception ", e);
