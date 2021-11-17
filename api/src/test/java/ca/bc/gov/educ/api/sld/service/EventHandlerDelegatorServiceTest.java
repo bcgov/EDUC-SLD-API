@@ -13,6 +13,7 @@ import ca.bc.gov.educ.api.sld.support.SldTestUtil;
 import ca.bc.gov.educ.api.sld.util.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.nats.client.Message;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -29,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static ca.bc.gov.educ.api.sld.constant.EventOutcome.*;
@@ -453,6 +455,7 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   }
 
   @Test
+  @SneakyThrows
   public void testHandleEvent_givenEventTypeCREATE_SLD_DIA_STUDENTS_shouldCreateSldDiaStudentsAndSendEvent() throws IOException {
 
     final File file = new File(
@@ -467,6 +470,15 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    boolean isDataNotPresent = true;
+    int counter = 0;
+    while (isDataNotPresent) {
+      if (sldDiaStudentRepository.count() > 0 || counter > 10) {
+        isDataNotPresent = false;
+      }
+      counter++;
+      TimeUnit.MILLISECONDS.sleep(20);
+    }
     verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
 
     final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
