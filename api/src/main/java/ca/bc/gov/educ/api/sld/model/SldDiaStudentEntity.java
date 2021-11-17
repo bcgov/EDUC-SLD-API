@@ -1,10 +1,6 @@
 package ca.bc.gov.educ.api.sld.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Immutable;
+import lombok.*;
 
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
@@ -15,25 +11,20 @@ import javax.persistence.Table;
  * The type Sld DIA Student entity.
  */
 @Entity
-@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Immutable
 @Table(name = "DIA_STUDENT")
+@Getter
+@Setter
+@ToString
 public class SldDiaStudentEntity {
 
   @EmbeddedId
   private SldDiaStudentId sldDiaStudentId;
 
-  @Column(name = "DISTNO")
-  private String distNo;
-
-  @Column(name = "SCHLNO")
-  private String schlNo;
-
-  @Column(name = "RECORD_NUMBER")
-  private Long recordNumber;
+  @Column(name = "PEN", nullable = false)
+  private String pen;
 
   @Column(name = "STUD_SURNAME")
   private String studSurname;

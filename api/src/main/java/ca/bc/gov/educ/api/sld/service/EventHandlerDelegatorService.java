@@ -92,6 +92,13 @@ public class EventHandlerDelegatorService {
           log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
           publishToNATS(event, message, isSynchronous, response);
           break;
+        case CREATE_SLD_DIA_STUDENTS:
+          log.info("received create sld dia students event :: {}", event.getSagaId());
+          log.trace(PAYLOAD_LOG, event.getEventPayload());
+          response = eventHandlerService.handleCreateSldDiaStudents(event);
+          log.info(RESPONDING_BACK_TO_NATS_ON_CHANNEL, message.getReplyTo() != null ? message.getReplyTo() : event.getReplyTo());
+          publishToNATS(event, message, isSynchronous, response);
+          break;
         default:
           log.info("silently ignoring other events :: {}", event);
           break;
