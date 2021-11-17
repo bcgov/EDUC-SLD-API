@@ -25,8 +25,12 @@ public interface SldDiaStudentMapper {
    * @param sldDiaStudentEntity the sld dia student entity
    * @return the sld dia student
    */
-  @Mapping(target = "pen", source="sldDiaStudentEntity.sldDiaStudentId.pen")
-  @Mapping(target = "reportDate", source="sldDiaStudentEntity.sldDiaStudentId.reportDate")
+  @Mapping(target = "schlNo", source = "sldDiaStudentEntity.sldDiaStudentId.schlNo")
+  @Mapping(target = "recordNumber", source = "sldDiaStudentEntity.sldDiaStudentId.recordNumber")
+  @Mapping(target = "distNo", source = "sldDiaStudentEntity.sldDiaStudentId.distNo")
+  @Mapping(target = "comment", ignore = true)
+  @Mapping(target = "pen", source = "sldDiaStudentEntity.pen")
+  @Mapping(target = "reportDate", source = "sldDiaStudentEntity.sldDiaStudentId.reportDate")
   SldDiaStudent toStructure(SldDiaStudentEntity sldDiaStudentEntity);
 
   /**

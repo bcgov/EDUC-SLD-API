@@ -4,13 +4,16 @@ import ca.bc.gov.educ.api.sld.controller.v1.BaseSLDAPITest;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentMapper;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentProgramMapper;
 import ca.bc.gov.educ.api.sld.messaging.MessagePublisher;
+import ca.bc.gov.educ.api.sld.repository.SldDiaStudentRepository;
 import ca.bc.gov.educ.api.sld.repository.SldRepository;
 import ca.bc.gov.educ.api.sld.repository.SldStudentProgramRepository;
 import ca.bc.gov.educ.api.sld.struct.v1.Event;
+import ca.bc.gov.educ.api.sld.struct.v1.SldDiaStudent;
 import ca.bc.gov.educ.api.sld.support.SldTestUtil;
 import ca.bc.gov.educ.api.sld.util.JsonUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.nats.client.Message;
+import lombok.SneakyThrows;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -23,7 +26,11 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.json.BasicJsonTester;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static ca.bc.gov.educ.api.sld.constant.EventOutcome.*;
@@ -49,6 +56,8 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   @Autowired
   private SldRepository sldRepository;
   @Autowired
+  private SldDiaStudentRepository sldDiaStudentRepository;
+  @Autowired
   private SldStudentProgramRepository sldStudentProgramRepository;
   @Mock
   private MessagePublisher messagePublisher;
@@ -67,6 +76,7 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   public void after() {
     this.sldRepository.deleteAll();
     this.sldStudentProgramRepository.deleteAll();
+    this.sldDiaStudentRepository.deleteAll();
   }
 
   /**
@@ -444,6 +454,38 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     assertThat(students).extractingJsonPathNumberValue("$.length()").isEqualTo(0);
   }
 
+  @Test
+  @SneakyThrows
+  public void testHandleEvent_givenEventTypeCREATE_SLD_DIA_STUDENTS_shouldCreateSldDiaStudentsAndSendEvent() throws IOException {
+
+    final File file = new File(
+      Objects.requireNonNull(SldTestUtil.class.getClassLoader().getResource("DIA_STUDENT.json")).getFile()
+    );
+    List<SldDiaStudent> sldDiaStudentList = JsonUtil.mapper.readValue(file, new TypeReference<>() {
+    });
+    SldTestUtil.createSampleDBData("SldSampleStudentData.json", new TypeReference<>() {
+    }, this.sldRepository, sldStudentMapper::toModel);
+    final var payload = JsonUtil.getJsonStringFromObject(sldDiaStudentList);
+    final var topic = "api-topic";
+    final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
+
+    this.eventHandlerDelegatorService.handleEvent(event, this.message);
+    boolean isDataNotPresent = true;
+    int counter = 0;
+    while (isDataNotPresent) {
+      if (sldDiaStudentRepository.count() > 0 || counter > 10) {
+        isDataNotPresent = false;
+      }
+      counter++;
+      TimeUnit.MILLISECONDS.sleep(20);
+    }
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(replyEvent.getEventType()).isEqualTo(CREATE_SLD_DIA_STUDENTS);
+    assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_DIA_STUDENTS_CREATED);
+    assertThat(replyEvent.getEventPayload()).isNotBlank();
+  }
 
   protected String dummyUpdateSldPenJson(final String pen, final String recordName, final String newPen) {
     return " {\n" +

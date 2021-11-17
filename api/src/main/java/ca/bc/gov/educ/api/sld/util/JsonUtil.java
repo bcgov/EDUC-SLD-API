@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * The type Json util.
  */
 public class JsonUtil {
-  private static final ObjectMapper mapper = new ObjectMapper();
+  public static final ObjectMapper mapper = new ObjectMapper();
 
   private JsonUtil() {
   }

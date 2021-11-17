@@ -5,31 +5,35 @@ package ca.bc.gov.educ.api.sld.constant;
  */
 public enum EventOutcome {
   /**
-   * SLD Student updated event outcome.
+   * The Sld student updated.
    */
   SLD_STUDENT_UPDATED,
   /**
-   * SLD Student not found event outcome.
+   * The Sld student not found.
    */
   SLD_STUDENT_NOT_FOUND,
   /**
-   * SLD DIA Student updated event outcome.
+   * The Sld dia student updated.
    */
   SLD_DIA_STUDENT_UPDATED,
   /**
-   * SLD Student Program updated event outcome.
+   * The Sld student program updated.
    */
   SLD_STUDENT_PROGRAM_UPDATED,
   /**
-   * SLD Student restored event outcome.
+   * The Sld student restored.
    */
   SLD_STUDENT_RESTORED,
   /**
-   * SLD DIA Student restored event outcome.
+   * The Sld dia student restored.
    */
   SLD_DIA_STUDENT_RESTORED,
   /**
-   * SLD Student Program restored event outcome.
+   * The Sld student program restored.
    */
-  SLD_STUDENT_PROGRAM_RESTORED
+  SLD_STUDENT_PROGRAM_RESTORED,
+  /**
+   * Sld dia students created event outcome.
+   */
+  SLD_DIA_STUDENTS_CREATED,
 }
