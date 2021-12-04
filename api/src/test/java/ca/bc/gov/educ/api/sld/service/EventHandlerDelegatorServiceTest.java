@@ -456,7 +456,7 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
 
   @Test
   @SneakyThrows
-  public void testHandleEvent_givenEventTypeCREATE_SLD_DIA_STUDENTS_shouldCreateSldDiaStudentsAndSendEvent() throws IOException {
+  public void testHandleEvent_givenEventTypeCREATE_SLD_DIA_STUDENTS_shouldCreateSldDiaStudentsAndSendEvent() {
 
     final File file = new File(
       Objects.requireNonNull(SldTestUtil.class.getClassLoader().getResource("DIA_STUDENT.json")).getFile()
