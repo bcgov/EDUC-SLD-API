@@ -200,9 +200,6 @@ public class EventHandlerService {
   public byte[] handleCreateSldDiaStudents(final Event event) throws JsonProcessingException {
     final List<SldDiaStudent> diaStudents = JsonUtil.mapper.readValue(event.getEventPayload(), new TypeReference<>() {
     });
-    val savedEntities = this.sldDiaStudentService.createDiaStudents(diaStudents.stream().map(SldDiaStudentMapper.mapper::toModel).collect(Collectors.toList()));
-    event.setEventOutcome(EventOutcome.SLD_DIA_STUDENTS_CREATED);
-    event.setEventPayload(JsonUtil.getJsonStringFromObject(savedEntities.stream().map(SldDiaStudentMapper.mapper::toStructure).collect(Collectors.toList())));
-    return this.createResponseEvent(event);
+    return this.sldDiaStudentService.createDiaStudents(diaStudents.stream().map(SldDiaStudentMapper.mapper::toModel).collect(Collectors.toList()), event);
   }
 }
