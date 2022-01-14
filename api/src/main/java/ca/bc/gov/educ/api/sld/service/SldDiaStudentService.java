@@ -55,7 +55,7 @@ public class SldDiaStudentService {
   }
 
   private List<String> prepareStatement(final List<SldDiaStudentEntity> entities) {
-    final List<String> updateStatements = new ArrayList<>();
+    final List<String> statements = new ArrayList<>();
     for (val entity : entities) {
       val builder = new StringBuilder();
       builder
@@ -133,9 +133,9 @@ public class SldDiaStudentService {
         .append("', '")
         .append(StringUtils.defaultString(entity.getPostedPen()))
         .append("')");
-      updateStatements.add(builder.toString());
+      statements.add(builder.toString());
     }
-    return updateStatements;
+    return statements;
   }
 
   private ca.bc.gov.educ.api.sld.model.Event createEvent(Event event) {

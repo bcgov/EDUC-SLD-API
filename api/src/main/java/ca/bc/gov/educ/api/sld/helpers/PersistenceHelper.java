@@ -13,12 +13,12 @@ public final class PersistenceHelper {
   }
 
   /**
-   * pass all the native update or insert statements and everything will be committed as part of single transaction.
+   * pass all the native update/insert statements and everything will be committed as part of single transaction.
    *
    * @param emf the Entity manager factory.
-   * @param updateStatements the list of update statements to be executed.
+   * @param statements the list of statements to be executed.
    */
-  public static int bulkExecute(final EntityManagerFactory emf, final List<String> updateStatements) {
+  public static int bulkExecute(final EntityManagerFactory emf, final List<String> statements) {
     val em = emf.createEntityManager();
 
     val tx = em.getTransaction();
@@ -27,7 +27,7 @@ public final class PersistenceHelper {
     // below timeout is in milli seconds, so it is 10 seconds.
     try {
       tx.begin();
-      for (val updateStatement : updateStatements) {
+      for (val updateStatement : statements) {
         log.info("generated sql is :: {}", updateStatement);
         final var nativeQuery = em.createNativeQuery(updateStatement).setHint("javax.persistence.query.timeout", 10000);
         rowsUpdated += nativeQuery.executeUpdate();
