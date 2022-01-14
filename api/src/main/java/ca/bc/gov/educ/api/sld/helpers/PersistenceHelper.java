@@ -23,14 +23,14 @@ public final class PersistenceHelper {
 
     val tx = em.getTransaction();
 
-    var rowsUpdated = 0;
+    var rowsExecuted = 0;
     // below timeout is in milli seconds, so it is 10 seconds.
     try {
       tx.begin();
       for (val statement : statements) {
         log.info("generated sql is :: {}", statement);
         final var nativeQuery = em.createNativeQuery(statement).setHint("javax.persistence.query.timeout", 10000);
-        rowsUpdated += nativeQuery.executeUpdate();
+        rowsExecuted += nativeQuery.executeUpdate();
       }
       tx.commit();
     } catch (final Exception e) {
@@ -41,6 +41,6 @@ public final class PersistenceHelper {
         em.close();
       }
     }
-    return rowsUpdated;
+    return rowsExecuted;
   }
 }
