@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.UUID;
 
 import static ca.bc.gov.educ.api.sld.constant.EventType.CREATE_SLD_DIA_STUDENTS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,7 +59,7 @@ public class SldDiaStudentServiceTest extends BaseSLDAPITest {
     SldTestUtil.createSampleDBData("SldSampleStudentData.json", new TypeReference<>() {
     }, this.sldRepository, sldStudentMapper::toModel);
     final var payload = JsonUtil.getJsonStringFromObject(sldDiaStudentList);
-    final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
+    final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).sagaId(UUID.randomUUID()).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
     val result = new String(service.createDiaStudents(sldDiaStudentList.stream().map(SldDiaStudentMapper.mapper::toModel).collect(Collectors.toList()), event));
     assertThat(result).isNotBlank();
     val events = eventRepository.findAll();

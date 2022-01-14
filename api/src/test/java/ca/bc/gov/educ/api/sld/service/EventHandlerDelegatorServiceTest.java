@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -467,7 +468,7 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     }, this.sldRepository, sldStudentMapper::toModel);
     final var payload = JsonUtil.getJsonStringFromObject(sldDiaStudentList);
     final var topic = "api-topic";
-    final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
+    final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).sagaId(UUID.randomUUID()).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
     boolean isDataNotPresent = true;
