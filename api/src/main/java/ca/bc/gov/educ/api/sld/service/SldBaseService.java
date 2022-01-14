@@ -1,6 +1,6 @@
 package ca.bc.gov.educ.api.sld.service;
 
-import ca.bc.gov.educ.api.sld.exception.SldRuntimeException;
+import ca.bc.gov.educ.api.sld.helpers.PersistenceHelper;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +38,7 @@ public abstract class SldBaseService<S, T> implements SldService<S, T> {
   protected List<T> updateBatch(final List<T> mergedFromPenData, final String mergedToPen) {
     final List<T> mergedToPenData = this.findExistingDataByPen(mergedToPen);
     final var updateStatements = this.prepareUpdateStatement(mergedFromPenData, mergedToPenData, mergedToPen);
-    final int count = this.bulkUpdate(updateStatements.getLeft());
+    final int count = PersistenceHelper.bulkExecute(this.emf, updateStatements.getLeft());
     if (count > 0) {
       return this.findExistingDataByIds(updateStatements.getRight());
     } else {
@@ -65,7 +65,7 @@ public abstract class SldBaseService<S, T> implements SldService<S, T> {
     return this.findExistingDataById(mergedFromId).flatMap((mergedFromPenData) -> {
       final List<T> mergedToPenData = this.findExistingDataByPen(mergedToPen);
       final var updateStatements = this.prepareUpdateStatement(List.of(mergedFromPenData), mergedToPenData, mergedToPen);
-      final int count = this.bulkUpdate(updateStatements.getLeft());
+      final int count = PersistenceHelper.bulkExecute(this.emf, updateStatements.getLeft());
       if (count > 0) {
         return this.findExistingDataById(updateStatements.getRight().get(0));
       } else {
@@ -76,43 +76,12 @@ public abstract class SldBaseService<S, T> implements SldService<S, T> {
 
   public List<T> restore(final String pen, final String mergedToPen) {
     final List<String> updateStatements = this.prepareRestoreStatement(mergedToPen, pen);
-    final int count = this.bulkUpdate(updateStatements);
+    final int count = PersistenceHelper.bulkExecute(this.emf, updateStatements);
     if (count > 0) {
       return this.findExistingDataByPen(pen);
     } else {
       return List.of();
     }
-  }
-
-  /**
-   * pass all the native update statements and everything will be committed as part of single transaction.
-   *
-   * @param updateStatements the list of update statements to be executed.
-   */
-  protected int bulkUpdate(final List<String> updateStatements) {
-    val em = this.emf.createEntityManager();
-
-    val tx = em.getTransaction();
-
-    var rowsUpdated = 0;
-    // below timeout is in milli seconds, so it is 10 seconds.
-    try {
-      tx.begin();
-      for (val updateStatement : updateStatements) {
-        log.info("generated sql is :: {}", updateStatement);
-        final var nativeQuery = em.createNativeQuery(updateStatement).setHint("javax.persistence.query.timeout", 10000);
-        rowsUpdated += nativeQuery.executeUpdate();
-      }
-      tx.commit();
-    } catch (final Exception e) {
-      log.error("Error occurred saving entity " + e.getMessage());
-      throw new SldRuntimeException("Error occurred saving entity", e);
-    } finally {
-      if (em.isOpen()) {
-        em.close();
-      }
-    }
-    return rowsUpdated;
   }
 
   protected synchronized void populateDuplicatePenSuffix() {
