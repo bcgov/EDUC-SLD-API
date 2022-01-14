@@ -1,5 +1,7 @@
 package ca.bc.gov.educ.api.sld.service;
 
+import ca.bc.gov.educ.api.sld.constant.EventOutcome;
+import ca.bc.gov.educ.api.sld.constant.EventType;
 import ca.bc.gov.educ.api.sld.controller.v1.BaseSLDAPITest;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentMapper;
 import ca.bc.gov.educ.api.sld.mappers.v1.SldStudentProgramMapper;
@@ -30,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -46,7 +49,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   private static final String nonExistentPen = "000000000";
   private static final String newPen = "100100010";
   @Captor
-  ArgumentCaptor<byte[]> eventCaptor;
+  ArgumentCaptor<byte[]> rawEventCaptor;
+  @Captor
+  ArgumentCaptor<Event> eventCaptor;
   @Autowired
   private SldStudentProgramService sldStudentProgramService;
   @Autowired
@@ -63,6 +68,8 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
   private MessagePublisher messagePublisher;
   @Mock
   private Message message;
+  @Mock
+  private EventHandlerService mockEventHandlerService;
   private EventHandlerDelegatorService eventHandlerDelegatorService;
 
   @Before
@@ -92,9 +99,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
     val results = this.sldStudentService.findExistingStudentsByPen(newPen).stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
@@ -115,9 +122,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
     val results = this.sldStudentService.findExistingStudentsByPen("110885621").stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
@@ -140,9 +147,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
 
@@ -163,9 +170,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
 
@@ -191,9 +198,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
 
@@ -219,9 +226,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
 
@@ -242,9 +249,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(RESTORE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_RESTORED);
     val results = this.sldStudentService.findExistingStudentsByPen(pen).stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
@@ -268,9 +275,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(RESTORE_SLD_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_RESTORED);
 
@@ -290,9 +297,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(RESTORE_SLD_STUDENT_PROGRAMS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENT_PROGRAMS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_RESTORED);
     val results = this.sldStudentProgramService.findExistingSLDStudentProgramsByPen(pen).stream().map(el -> el.getSldStudentProgramId().getPen()).collect(Collectors.toList());
@@ -317,9 +324,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(RESTORE_SLD_STUDENT_PROGRAMS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(RESTORE_SLD_STUDENT_PROGRAMS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_RESTORED);
 
@@ -340,9 +347,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS_BY_IDS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS_BY_IDS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
     val results = this.sldStudentService.findExistingStudentsByPen(newPen).stream().map(el -> el.getSldStudentId().getPen()).collect(Collectors.toList());
@@ -365,9 +372,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENTS_BY_IDS).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENTS_BY_IDS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_UPDATED);
 
@@ -389,9 +396,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
 
@@ -417,9 +424,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
 
@@ -444,9 +451,9 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     final var event = Event.builder().eventType(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA).payloadVersion("V1").eventPayload(payload).replyTo(topic).build();
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(UPDATE_SLD_STUDENT_PROGRAMS_BY_DATA);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_STUDENT_PROGRAM_UPDATED);
 
@@ -467,7 +474,11 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
     }, this.sldRepository, sldStudentMapper::toModel);
     final var payload = JsonUtil.getJsonStringFromObject(sldDiaStudentList);
     final var topic = "api-topic";
-    final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
+    final var event = Event.builder().eventType(CREATE_SLD_DIA_STUDENTS).sagaId(UUID.randomUUID()).payloadVersion("V1").eventPayload(payload).replyTo("api-topic").build();
+
+    final var respEvent = JsonUtil.getJsonBytesFromObject(Event.builder().sagaId(event.getSagaId()).eventType(event.getEventType()).eventOutcome(SLD_DIA_STUDENTS_CREATED).eventPayload("10").build());
+    when(this.mockEventHandlerService.handleCreateSldDiaStudents(any(Event.class))).thenReturn(respEvent);
+    this.eventHandlerDelegatorService = new EventHandlerDelegatorService(this.messagePublisher, this.mockEventHandlerService);
 
     this.eventHandlerDelegatorService.handleEvent(event, this.message);
     boolean isDataNotPresent = true;
@@ -479,9 +490,12 @@ public class EventHandlerDelegatorServiceTest extends BaseSLDAPITest {
       counter++;
       TimeUnit.MILLISECONDS.sleep(20);
     }
-    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.eventCaptor.capture());
+    verify(this.messagePublisher, atMostOnce()).dispatchMessage(eq(topic), this.rawEventCaptor.capture());
+    verify(this.mockEventHandlerService, times(1)).handleCreateSldDiaStudents(this.eventCaptor.capture());
 
-    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.eventCaptor.getValue()));
+    assertThat(eventCaptor.getValue()).isEqualTo(event);
+
+    final var replyEvent = JsonUtil.getJsonObjectFromString(Event.class, new String(this.rawEventCaptor.getValue()));
     assertThat(replyEvent.getEventType()).isEqualTo(CREATE_SLD_DIA_STUDENTS);
     assertThat(replyEvent.getEventOutcome()).isEqualTo(SLD_DIA_STUDENTS_CREATED);
     assertThat(replyEvent.getEventPayload()).isNotBlank();
