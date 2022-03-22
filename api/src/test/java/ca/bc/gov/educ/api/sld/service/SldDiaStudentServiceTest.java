@@ -45,6 +45,7 @@ public class SldDiaStudentServiceTest extends BaseSLDAPITest {
   public void after() {
     this.sldRepository.deleteAll();
     this.sldDiaStudentRepository.deleteAll();
+    this.eventRepository.deleteAll();
   }
 
   @Test

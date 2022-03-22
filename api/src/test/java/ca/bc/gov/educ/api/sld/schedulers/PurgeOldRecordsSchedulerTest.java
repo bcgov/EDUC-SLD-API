@@ -3,6 +3,7 @@ package ca.bc.gov.educ.api.sld.schedulers;
 import ca.bc.gov.educ.api.sld.controller.v1.BaseSLDAPITest;
 import ca.bc.gov.educ.api.sld.model.Event;
 import ca.bc.gov.educ.api.sld.repository.EventRepository;
+import org.junit.After;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,6 +21,10 @@ public class PurgeOldRecordsSchedulerTest extends BaseSLDAPITest {
   @Autowired
   PurgeOldRecordsScheduler purgeOldRecordsScheduler;
 
+  @After
+  public void after() {
+    this.eventRepository.deleteAll();
+  }
 
   @Test
   public void testPurgeOldRecords_givenOldRecordsPresent_shouldBeDeleted() {
