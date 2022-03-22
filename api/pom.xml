@@ -161,7 +161,18 @@
       <artifactId>spring-context-indexer</artifactId>
       <optional>true</optional>
     </dependency>
-
+    <!-- https://mvnrepository.com/artifact/net.javacrumbs.shedlock/shedlock-spring -->
+    <dependency>
+      <groupId>net.javacrumbs.shedlock</groupId>
+      <artifactId>shedlock-spring</artifactId>
+      <version>${shedlock.version}</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/net.javacrumbs.shedlock/shedlock-provider-jdbc-template -->
+    <dependency>
+      <groupId>net.javacrumbs.shedlock</groupId>
+      <artifactId>shedlock-provider-jdbc-template</artifactId>
+      <version>${shedlock.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
