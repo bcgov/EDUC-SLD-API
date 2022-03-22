@@ -1,0 +1,13 @@
+CREATE TABLE SLD_SHEDLOCK
+(
+    NAME       VARCHAR(64),
+    LOCK_UNTIL TIMESTAMP(3) NULL,
+    LOCKED_AT  TIMESTAMP(3) NULL,
+    LOCKED_BY  VARCHAR(255),
+    CONSTRAINT SLD_SHEDLOCK_PK PRIMARY KEY (NAME) USING INDEX TABLESPACE API_PEN_IDX
+);
+COMMENT ON TABLE SLD_SHEDLOCK IS 'This table is used to achieve distributed lock between pods, for schedulers.';
+COMMENT ON COLUMN SLD_SHEDLOCK.NAME IS 'The lock name.';
+COMMENT ON COLUMN SLD_SHEDLOCK.LOCK_UNTIL IS 'The time when the lock will be released.';
+COMMENT ON COLUMN SLD_SHEDLOCK.LOCKED_AT IS 'The time when the lock was acquired.';
+COMMENT ON COLUMN SLD_SHEDLOCK.LOCKED_BY IS 'The component which acquired the lock.';
