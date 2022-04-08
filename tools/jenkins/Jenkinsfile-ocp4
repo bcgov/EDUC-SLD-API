@@ -11,10 +11,10 @@ pipeline{
       APP_NAME = 'sld-api'
       REPO_NAME = "educ-sld-api"
       OWNER = 'bcgov'
-      JOB_NAME = 'main'
+      JOB_NAME = 'master'
       TAG = 'latest'
-      TARGET_ENV = 'tools'
-      STAGING_ENV = 'Tools'
+      TARGET_ENV = 'dev'
+      STAGING_ENV = 'Dev'
       TARGET_ENVIRONMENT = "${NAMESPACE}-${TARGET_ENV}"
 
       APP_DOMAIN = 'apps.silver.devops.gov.bc.ca'
