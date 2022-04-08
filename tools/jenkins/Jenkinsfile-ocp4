@@ -11,7 +11,7 @@ pipeline{
       APP_NAME = 'sld-api'
       REPO_NAME = "educ-sld-api"
       OWNER = 'bcgov'
-      JOB_NAME = 'master'
+      JOB_NAME = 'main'
       TAG = 'latest'
       TARGET_ENV = 'dev'
       STAGING_ENV = 'Dev'
