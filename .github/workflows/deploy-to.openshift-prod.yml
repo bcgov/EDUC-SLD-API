@@ -20,11 +20,11 @@ env:
   IMAGE_REGISTRY_USER: ${{ github.actor }}
   IMAGE_REGISTRY_PASSWORD: ${{ github.token }}
 
-  SPRING_BOOT_IMAGE_NAME: sld-api-main
+  SPRING_BOOT_IMAGE_NAME: sld-api-master
 
   APP_NAME: 'sld-api'
   REPO_NAME: "educ-sld-api"
-  BRANCH: "main"
+  BRANCH: "master"
   NAMESPACE: ${{ secrets.COMMON_NAMESPACE_NO_ENV }}
   COMMON_NAMESPACE: ${{ secrets.COMMON_NAMESPACE_NO_ENV }}
   TAG: "latest"
