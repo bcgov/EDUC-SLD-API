@@ -8,7 +8,6 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import jakarta.persistence.EntityManagerFactory;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 /**
@@ -57,7 +56,7 @@ public abstract class SldBaseService<S, T> implements SldService<S, T> {
   }
 
   protected List<T> updateBatchByExamples(final List<T> mergedFromData, final String mergedToPen) {
-    final List<T> mergedFromPenData = mergedFromData.stream().flatMap(data -> this.findExistingDataByDataMatcher(data).stream()).collect(Collectors.toList());
+    final List<T> mergedFromPenData = mergedFromData.stream().flatMap(data -> this.findExistingDataByDataMatcher(data).stream()).toList();
     return this.updateBatch(mergedFromPenData, mergedToPen);
   }
 
