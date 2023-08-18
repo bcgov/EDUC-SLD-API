@@ -4,7 +4,7 @@ import ca.bc.gov.educ.api.sld.exception.SldRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
 
 @Slf4j
@@ -29,7 +29,7 @@ public final class PersistenceHelper {
       tx.begin();
       for (val statement : statements) {
         log.info("generated sql is :: {}", statement);
-        final var nativeQuery = em.createNativeQuery(statement).setHint("javax.persistence.query.timeout", 10000);
+        final var nativeQuery = em.createNativeQuery(statement).setHint("jakarta.persistence.query.timeout", 10000);
         rowsExecuted += nativeQuery.executeUpdate();
       }
       tx.commit();

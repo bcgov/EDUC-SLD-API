@@ -2,7 +2,7 @@ package ca.bc.gov.educ.api.sld.filter;
 
 import org.apache.commons.lang3.StringUtils;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.function.Function;
 
 /**
