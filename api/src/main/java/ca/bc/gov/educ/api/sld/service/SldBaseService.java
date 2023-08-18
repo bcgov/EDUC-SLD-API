@@ -6,7 +6,7 @@ import lombok.val;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -228,7 +228,7 @@ public abstract class SldBaseService<S, T> implements SldService<S, T> {
   private String findHighestPen(final Map<String, List<String>> penMap, final String key) {
     final List<String> penList = penMap.get(key).stream()
       .sorted(Comparator.reverseOrder())
-      .collect(Collectors.toList());
+      .toList();
     return penList.isEmpty() ? "" : penList.get(0);
   }
 

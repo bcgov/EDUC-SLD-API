@@ -43,7 +43,7 @@ public class SldStudentSLDAPITest extends BaseSLDAPITest {
   @Test
   public void testGetSldStudentByPen_GivenPenExistInDB_ShouldReturnStatusOk() throws Exception {
 
-    this.mvc.perform(get("/api/v1/student/")
+    this.mvc.perform(get("/api/v1/student")
       .param("pen", "120164447")
       .with(jwt().jwt((jwt) -> jwt.claim("scope", "READ_SLD_STUDENT"))))
         .andExpect(status().isOk())
@@ -59,7 +59,7 @@ public class SldStudentSLDAPITest extends BaseSLDAPITest {
   @Test
   public void testGetSldStudentByPen_GivenPenDoesNotExistInDB_ShouldReturnEmptyArray() throws Exception {
 
-    this.mvc.perform(get("/api/v1/student/").param("pen", "7613009911").with(jwt().jwt((jwt) -> jwt.claim("scope", "READ_SLD_STUDENT")))
+    this.mvc.perform(get("/api/v1/student").param("pen", "7613009911").with(jwt().jwt((jwt) -> jwt.claim("scope", "READ_SLD_STUDENT")))
     ).andDo(print())
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.length()", is(0)));

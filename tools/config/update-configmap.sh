@@ -1,7 +1,11 @@
 envValue=$1
 APP_NAME=$2
 OPENSHIFT_NAMESPACE=$3
-APP_NAME_UPPER=${APP_NAME^^}
+COMMON_NAMESPACE=$4
+DB_JDBC_CONNECT_STRING=$5
+DB_PWD=$6
+DB_USER=$7
+SPLUNK_TOKEN=$8
 
 TZVALUE="America/Vancouver"
 SOAM_KC_REALM_ID="master"
@@ -9,10 +13,7 @@ SOAM_KC=soam-$envValue.apps.silver.devops.gov.bc.ca
 
 SOAM_KC_LOAD_USER_ADMIN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"username": "\(.*\)"/\1/p' | base64 --decode)
 SOAM_KC_LOAD_USER_PASS=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get secret sso-admin-${envValue} | sed -n 's/.*"password": "\(.*\)",/\1/p' | base64 --decode)
-DB_JDBC_CONNECT_STRING=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps ${APP_NAME}-${envValue}-setup-config | sed -n 's/.*"DB_JDBC_CONNECT_STRING": "\(.*\)",/\1/p')
-DB_PWD=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps ${APP_NAME}-${envValue}-setup-config | sed -n "s/.*\"DB_PWD_${APP_NAME_UPPER}\": \"\(.*\)\",/\1/p")
-DB_USER=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps "${APP_NAME}"-"${envValue}"-setup-config | sed -n "s/.*\"DB_USER_${APP_NAME_UPPER}\": \"\(.*\)\",/\1/p")
-SPLUNK_TOKEN=$(oc -n "$OPENSHIFT_NAMESPACE"-"$envValue" -o json get configmaps "${APP_NAME}"-"${envValue}"-setup-config | sed -n "s/.*\"SPLUNK_TOKEN_${APP_NAME_UPPER}\": \"\(.*\)\"/\1/p")
+
 NATS_URL="nats://nats.${OPENSHIFT_NAMESPACE}-${envValue}.svc.cluster.local:4222"
 
 echo Fetching SOAM token
