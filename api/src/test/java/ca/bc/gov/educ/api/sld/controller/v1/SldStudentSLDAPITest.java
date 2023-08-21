@@ -53,7 +53,6 @@ public class SldStudentSLDAPITest extends BaseSLDAPITest {
         .andExpect(jsonPath("$[0].legalSurname", is("Larusso".toUpperCase())))
         .andExpect(jsonPath("$[0].legalGivenName", is("Daniel".toUpperCase())))
         .andExpect(jsonPath("$[0].birthDate", is("19980410")));
-
   }
 
   @Test
@@ -63,7 +62,15 @@ public class SldStudentSLDAPITest extends BaseSLDAPITest {
     ).andDo(print())
       .andExpect(status().isOk())
       .andExpect(jsonPath("$.length()", is(0)));
+  }
 
+  @Test
+  public void testGetSldStudentByPen_WithWrongScope_ShouldReturnStatusForbidden() throws Exception {
 
+    this.mvc.perform(get("/api/v1/student")
+            .param("pen", "120164447")
+            .with(jwt().jwt((jwt) -> jwt.claim("scope", "WRONG_SCOPE"))))
+        .andExpect(status().isForbidden())
+        .andDo(print());
   }
 }
