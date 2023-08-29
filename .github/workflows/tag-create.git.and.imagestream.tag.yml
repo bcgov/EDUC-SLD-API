@@ -9,7 +9,7 @@ env:
   OPENSHIFT_NAMESPACE: ${{ secrets.COMMON_NAMESPACE_NO_ENV }}-dev
 
   REPO_NAME: "educ-sld-api"
-  BRANCH: "main"
+  BRANCH: "master"
   NAMESPACE: ${{ secrets.COMMON_NAMESPACE_NO_ENV }}
 
 on:
