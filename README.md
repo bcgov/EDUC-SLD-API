@@ -1,4 +1,4 @@
-![Lifecycle:Maturing](https://img.shields.io/badge/Lifecycle-Maturing-007EC6)
+![Lifecycle:Deprecated](https://img.shields.io/badge/Lifecycle-Deprecated-red)
 # EDUC-SLD-API
 
 
